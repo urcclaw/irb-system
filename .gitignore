@@ -16,3 +16,7 @@ frontend/dist/
 .DS_Store
 .vscode/
 .idea/
+
+# Uploaded documents (PDPA compliance)
+uploads/*
+!uploads/.gitkeep
