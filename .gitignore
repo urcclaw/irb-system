@@ -20,3 +20,6 @@ frontend/dist/
 # Uploaded documents (PDPA compliance)
 uploads/*
 !uploads/.gitkeep
+
+backup.sql
+*.sql

@@ -75,19 +75,13 @@ async def create_user(db: db_dependency, create_user_request: CreateUserRequest)
     user_role = create_user_request.role if create_user_request.role in ["pi", "assistant"] else "pi"
 
     user = User(
-        email=create_user_request.email,
-        username=create_user_request.username,
-        first_name=create_user_request.first_name,
-        last_name=create_user_request.last_name,
-        phone_number=create_user_request.phone_number,
-        role=user_role,
-        hashed_password=get_password_hash(create_user_request.password),
-        is_active=True,
+        email=create_user_request.email, username=create_user_request.username,
+        first_name=create_user_request.first_name, last_name=create_user_request.last_name,
+        phone_number=create_user_request.phone_number, role=user_role,
+        hashed_password=get_password_hash(create_user_request.password), is_active=True,
     )
     try:
-        db.add(user)
-        db.commit()
-        db.refresh(user)
+        db.add(user); db.commit(); db.refresh(user)
     except IntegrityError:
         db.rollback()
         raise HTTPException(status_code=400, detail="User already exists.")

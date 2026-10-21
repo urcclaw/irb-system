@@ -4,12 +4,7 @@ import api from "../api";
 const AuthCtx = createContext(null);
 
 function decodeJwtRole(token) {
-  try {
-    const payload = JSON.parse(atob(token.split(".")[1]));
-    return payload.role || null;
-  } catch {
-    return null;
-  }
+  try { return JSON.parse(atob(token.split(".")[1])).role || null; } catch { return null; }
 }
 
 export function AuthProvider({ children }) {
@@ -26,27 +21,18 @@ export function AuthProvider({ children }) {
     }
   }, [token]);
 
-  const value = useMemo(
-    () => ({
+  const value = useMemo(() => ({
       isAuthed: !!token,
       role: role,
       isIRB: role === 'irb_officer' || role === 'admin',
+      isCommittee: role === 'committee' || role === 'admin',
       isPI: role === 'pi',
       isAssistant: role === 'assistant',
       isAdmin: role === 'admin',
-      login: (t) => {
-        localStorage.setItem("token", t);
-        setToken(t);
-      },
-      logout: () => {
-        localStorage.removeItem("token");
-        setToken(null);
-      },
-    }),
-    [token, role]
-  );
+      login: (t) => { localStorage.setItem("token", t); setToken(t); },
+      logout: () => { localStorage.removeItem("token"); setToken(null); },
+    }), [token, role]);
 
   return <AuthCtx.Provider value={value}>{children}</AuthCtx.Provider>;
 }
-
 export const useAuth = () => useContext(AuthCtx);

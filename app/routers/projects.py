@@ -2,11 +2,8 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File
 from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session
-from datetime import datetime
 from pydantic import BaseModel
-import os
-import shutil
-
+import os, shutil
 from ..models import Project, User, AuditLog
 from .auth import get_current_user
 from ..database import SessionLocal
@@ -23,85 +20,51 @@ user_dependency = Annotated[User, Depends(get_current_user)]
 
 class ProjectCreate(BaseModel):
     title: str
-    irb_number: str
-    approval_date: datetime
-    expiry_date: datetime
+    review_type: str
 
-def create_audit_log(db: Session, user_id: int, action: str, target_id: str, details: str):
-    log = AuditLog(user_id=user_id, action=action, target_id=target_id, details=details)
-    db.add(log)
-    db.commit()
-
-# 1. สร้างโครงการใหม่
 @router.post("/", status_code=status.HTTP_201_CREATED)
 async def create_project(project_data: ProjectCreate, db: db_dependency, current_user: user_dependency):
     new_project = Project(
-        title=project_data.title,
-        irb_number=project_data.irb_number,
-        approval_date=project_data.approval_date,
-        expiry_date=project_data.expiry_date,
-        owner_id=current_user.id,
-        status="pending"
+        title=project_data.title, 
+        review_type=project_data.review_type, 
+        owner_id=current_user.id, 
+        status="pending_docs"
     )
-    if db.query(Project).filter(Project.irb_number == project_data.irb_number).first():
-        raise HTTPException(status_code=400, detail="IRB number already exists")
-
-    db.add(new_project)
-    db.commit()
-    db.refresh(new_project)
-
-    create_audit_log(db, current_user.id, "CREATE_PROJECT", str(new_project.id), f"Created project: {new_project.title}")
+    db.add(new_project); db.commit(); db.refresh(new_project)
     return new_project
 
-# 2. ดูรายการโครงการของตัวเอง
 @router.get("/")
 async def get_my_projects(db: db_dependency, current_user: user_dependency):
-    projects = db.query(Project).filter(Project.owner_id == current_user.id).all()
-    return projects
+    return db.query(Project).filter(Project.owner_id == current_user.id).all()
 
-# 3. อัปโหลดไฟล์ PDF
-@router.post("/{project_id}/upload", status_code=status.HTTP_200_OK)
+@router.post("/{project_id}/upload/{doc_type}", status_code=status.HTTP_200_OK)
 async def upload_project_document(
-    project_id: int,
-    file: UploadFile = File(...), 
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    project_id: int, doc_type: str, file: UploadFile = File(...), 
+    db: Session = Depends(get_db), current_user: User = Depends(get_current_user)
 ):
     project = db.query(Project).filter(Project.id == project_id, Project.owner_id == current_user.id).first()
-    if not project:
-        raise HTTPException(status_code=404, detail="Project not found or you don't have permission")
-    if file.content_type != "application/pdf":
-        raise HTTPException(status_code=400, detail="Only PDF files are allowed")
+    if not project: raise HTTPException(status_code=404, detail="ไม่พบโครงการ")
+    if file.content_type != "application/pdf": raise HTTPException(status_code=400, detail="รับเฉพาะไฟล์ PDF")
+
+    valid_docs = ['doc_proposal', 'doc_submission_form', 'doc_ethics_form', 'doc_self_assessment',
+                  'doc_consent_form', 'doc_info_sheet', 'doc_coi_form', 'doc_researcher_cv',
+                  'doc_renewal_form', 'doc_closure_form']
+    if doc_type not in valid_docs: raise HTTPException(status_code=400, detail="ประเภทเอกสารไม่ถูกต้อง")
 
     file_extension = os.path.splitext(file.filename)[1]
-    safe_filename = f"project_{project.id}_{project.irb_number}{file_extension}"
+    safe_filename = f"{project.id}_{doc_type}{file_extension}"
     file_path = f"uploads/{safe_filename}"
 
-    with open(file_path, "wb") as buffer:
-        shutil.copyfileobj(file.file, buffer)
+    with open(file_path, "wb") as buffer: shutil.copyfileobj(file.file, buffer)
 
-    project.document_path = file_path
+    setattr(project, doc_type, file_path)
     db.commit()
-    db.refresh(project)
+    return {"message": f"อัปโหลด {doc_type} สำเร็จ"}
 
-    create_audit_log(db, current_user.id, "UPLOAD_DOC", str(project.id), f"Uploaded file: {safe_filename}")
-    return {"message": "File uploaded successfully", "file_path": file_path}
-
-# 4. ดึงไฟล์ PDF ของตัวเอง (สำหรับผู้วิจัย)
-@router.get("/{project_id}/document", status_code=status.HTTP_200_OK)
-async def get_my_project_document(
-    project_id: int,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
-):
+@router.get("/{project_id}/document/{doc_type}", status_code=status.HTTP_200_OK)
+async def get_my_project_document(project_id: int, doc_type: str, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     project = db.query(Project).filter(Project.id == project_id, Project.owner_id == current_user.id).first()
-    if not project:
-        raise HTTPException(status_code=404, detail="ไม่พบโครงการ หรือคุณไม่มีสิทธิ์เข้าถึง")
-    if not project.document_path or not os.path.exists(project.document_path):
-        raise HTTPException(status_code=404, detail="ไม่พบไฟล์เอกสารสำหรับโครงการนี้")
-
-    return FileResponse(
-        path=project.document_path, 
-        media_type='application/pdf', 
-        filename=os.path.basename(project.document_path)
-    )
+    if not project: raise HTTPException(status_code=404, detail="ไม่พบโครงการ")
+    file_path = getattr(project, doc_type, None)
+    if not file_path or not os.path.exists(file_path): raise HTTPException(status_code=404, detail="ไม่พบไฟล์")
+    return FileResponse(path=file_path, media_type='application/pdf', filename=os.path.basename(file_path))
