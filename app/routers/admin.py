@@ -1,9 +1,11 @@
 from typing import Annotated
 from sqlalchemy.orm import Session
 from fastapi import APIRouter, Depends, HTTPException, Path, status
+from fastapi.responses import FileResponse
 from ..models import Project, User, AuditLog
 from ..database import SessionLocal
 from .auth import get_current_user
+import os
 
 router = APIRouter(prefix='/admin', tags=['admin'])
 
@@ -29,7 +31,6 @@ def create_audit_log(db: Session, user_id: int, action: str, target_id: str, det
 @router.get("/projects", status_code=status.HTTP_200_OK)
 def read_all_projects(user: user_dependency, db: db_dependency):
     check_if_irb_or_admin(user)
-    # ดึงข้อมูลโครงการพร้อมกับข้อมูลเจ้าของ (JOIN)
     projects = db.query(Project).all()
     result = []
     for p in projects:
@@ -47,8 +48,6 @@ def approve_project(user: user_dependency, db: db_dependency, project_id: int = 
     project = db.get(Project, project_id)
     if project is None:
         raise HTTPException(status_code=404, detail='Project not found.')
-    
-    # ป้องกันการอนุมัติโครงการตัวเอง
     if project.owner_id == user.id:
         raise HTTPException(status_code=403, detail='คุณไม่สามารถอนุมัติโครงการของคุณเองได้')
 
@@ -63,3 +62,19 @@ def approve_project(user: user_dependency, db: db_dependency, project_id: int = 
 def read_all_users(user: user_dependency, db: db_dependency):
     check_if_irb_or_admin(user)
     return db.query(User).all()
+
+# ดึงไฟล์ PDF สำหรับเจ้าหน้าที่ IRB
+@router.get("/projects/{project_id}/document", status_code=status.HTTP_200_OK)
+def get_project_document(user: user_dependency, db: db_dependency, project_id: int = Path(gt=0)):
+    check_if_irb_or_admin(user)
+    project = db.get(Project, project_id)
+    if project is None:
+        raise HTTPException(status_code=404, detail='Project not found.')
+    if not project.document_path or not os.path.exists(project.document_path):
+        raise HTTPException(status_code=404, detail='No document attached or file not found.')
+
+    return FileResponse(
+        path=project.document_path, 
+        media_type='application/pdf', 
+        filename=os.path.basename(project.document_path)
+    )

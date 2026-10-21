@@ -3,12 +3,13 @@ import api from '../../api';
 import { useAuth } from '../../store/auth';
 
 export default function Dashboard() {
-  const { isPI } = useAuth(); // ใช้เช็กสิทธิ์
+  const { isPI } = useAuth();
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
   const [formData, setFormData] = useState({ title: '', irb_number: '', approval_date: '', expiry_date: '' });
   const [file, setFile] = useState(null);
   const [selectedProject, setSelectedProject] = useState(null);
+  const [pdfUrl, setPdfUrl] = useState(null);
 
   useEffect(() => { fetchProjects(); }, []);
 
@@ -42,6 +43,19 @@ export default function Dashboard() {
     } catch (err) { alert(err.response?.data?.detail || 'อัปโหลดล้มเหลว'); }
   };
 
+  const handleViewPdf = async (projectId) => {
+    try {
+      const response = await api.get(`/projects/${projectId}/document`, { responseType: 'blob' });
+      const fileUrl = URL.createObjectURL(response.data);
+      setPdfUrl(fileUrl);
+    } catch (err) { alert('ไม่สามารถเปิดไฟล์ได้'); }
+  };
+
+  const closePdfModal = () => {
+    if (pdfUrl) URL.revokeObjectURL(pdfUrl);
+    setPdfUrl(null);
+  };
+
   if (loading) return <div className="text-center mt-10">กำลังโหลดข้อมูล...</div>;
 
   return (
@@ -50,7 +64,6 @@ export default function Dashboard() {
         <h1 className="text-2xl font-bold text-slate-800">หน้าจอจัดการโครงการ</h1>
       </div>
 
-      {/* แสดงฟอร์มสร้างโครงการเฉพาะ PI */}
       {isPI && (
         <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
           <h2 className="text-lg font-semibold mb-4 text-slate-700">ยื่นขออนุมัติโครงการใหม่</h2>
@@ -85,7 +98,14 @@ export default function Dashboard() {
                   </span>
                 </td>
                 <td className="p-4 text-sm">
-                  {p.document_path ? <span className="text-green-600">แนบแล้ว</span> : <button onClick={() => setSelectedProject(p.id)} className="text-blue-600 hover:underline">แนบไฟล์ PDF</button>}
+                  {p.document_path ? (
+                    <div className="flex space-x-3">
+                      <button onClick={() => handleViewPdf(p.id)} className="text-green-600 hover:underline font-medium">ดูเอกสาร</button>
+                      <button onClick={() => setSelectedProject(p.id)} className="text-slate-400 hover:text-slate-600 text-xs">เปลี่ยนไฟล์</button>
+                    </div>
+                  ) : (
+                    <button onClick={() => setSelectedProject(p.id)} className="text-blue-600 hover:underline">แนบไฟล์ PDF</button>
+                  )}
                 </td>
               </tr>
             ))}
@@ -104,6 +124,22 @@ export default function Dashboard() {
                 <button type="submit" className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">อัปโหลด</button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {pdfUrl && (
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-xl shadow-xl w-full max-w-5xl h-[90vh] flex flex-col overflow-hidden">
+            <div className="flex justify-between items-center p-4 border-b bg-slate-50">
+              <h3 className="text-lg font-bold text-slate-800">เอกสารโครงการ</h3>
+              <button onClick={closePdfModal} className="text-red-500 hover:text-red-700 font-bold text-xl">✕</button>
+            </div>
+            <div className="flex-1 bg-slate-200">
+              <object data={pdfUrl} type="application/pdf" width="100%" height="100%">
+                <p className="text-center mt-10">เบราว์เซอร์ไม่รองรับการแสดง PDF <a href={pdfUrl} download className="text-blue-600 underline">คลิกเพื่อดาวน์โหลด</a></p>
+              </object>
+            </div>
           </div>
         </div>
       )}

@@ -1,5 +1,6 @@
 from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File
+from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session
 from datetime import datetime
 from pydantic import BaseModel
@@ -49,9 +50,7 @@ async def create_project(project_data: ProjectCreate, db: db_dependency, current
     db.commit()
     db.refresh(new_project)
 
-    # บันทึก Audit Log
     create_audit_log(db, current_user.id, "CREATE_PROJECT", str(new_project.id), f"Created project: {new_project.title}")
-    
     return new_project
 
 # 2. ดูรายการโครงการของตัวเอง
@@ -87,3 +86,22 @@ async def upload_project_document(
 
     create_audit_log(db, current_user.id, "UPLOAD_DOC", str(project.id), f"Uploaded file: {safe_filename}")
     return {"message": "File uploaded successfully", "file_path": file_path}
+
+# 4. ดึงไฟล์ PDF ของตัวเอง (สำหรับผู้วิจัย)
+@router.get("/{project_id}/document", status_code=status.HTTP_200_OK)
+async def get_my_project_document(
+    project_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    project = db.query(Project).filter(Project.id == project_id, Project.owner_id == current_user.id).first()
+    if not project:
+        raise HTTPException(status_code=404, detail="ไม่พบโครงการ หรือคุณไม่มีสิทธิ์เข้าถึง")
+    if not project.document_path or not os.path.exists(project.document_path):
+        raise HTTPException(status_code=404, detail="ไม่พบไฟล์เอกสารสำหรับโครงการนี้")
+
+    return FileResponse(
+        path=project.document_path, 
+        media_type='application/pdf', 
+        filename=os.path.basename(project.document_path)
+    )
