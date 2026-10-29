@@ -4,7 +4,12 @@ import api from "../api";
 const AuthCtx = createContext(null);
 
 function decodeJwtRole(token) {
-  try { return JSON.parse(atob(token.split(".")[1])).role || null; } catch { return null; }
+  try {
+    const payload = JSON.parse(atob(token.split(".")[1]));
+    return payload.role || null;
+  } catch {
+    return null;
+  }
 }
 
 export function AuthProvider({ children }) {
@@ -21,18 +26,29 @@ export function AuthProvider({ children }) {
     }
   }, [token]);
 
-  const value = useMemo(() => ({
+  const value = useMemo(
+    () => ({
       isAuthed: !!token,
       role: role,
-      isIRB: role === 'irb_officer' || role === 'admin',
-      isCommittee: role === 'committee' || role === 'admin',
+      // ✅ แยกสิทธิ์ให้ชัดเจน
+      isAdmin: role === 'admin',
+      isIRB: role === 'irb_officer',
+      isCommittee: role === 'committee',
       isPI: role === 'pi',
       isAssistant: role === 'assistant',
-      isAdmin: role === 'admin',
-      login: (t) => { localStorage.setItem("token", t); setToken(t); },
-      logout: () => { localStorage.removeItem("token"); setToken(null); },
-    }), [token, role]);
+      login: (t) => {
+        localStorage.setItem("token", t);
+        setToken(t);
+      },
+      logout: () => {
+        localStorage.removeItem("token");
+        setToken(null);
+      },
+    }),
+    [token, role]
+  );
 
   return <AuthCtx.Provider value={value}>{children}</AuthCtx.Provider>;
 }
+
 export const useAuth = () => useContext(AuthCtx);

@@ -5,14 +5,11 @@ export default function Dashboard() {
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
   const [formData, setFormData] = useState({ title: '', review_type: 'exempt' });
-  
-  // State สำหรับ Modal จัดการเอกสาร
   const [selectedProject, setSelectedProject] = useState(null); 
   const [uploadingDoc, setUploadingDoc] = useState(null); 
   const [file, setFile] = useState(null);
   const [pdfUrl, setPdfUrl] = useState(null);
 
-  // รายการเอกสารทั้ง 10 ประเภท
   const docTypes = [
     { key: 'doc_proposal', label: '1. บันทึกข้อความ ข้อเสนอโครงการวิจัย' },
     { key: 'doc_submission_form', label: '2. แบบฟอร์มขอส่งคำร้องขอยื่นเสนอขอรับการพิจารณาจริยธรรม' },
@@ -39,7 +36,7 @@ export default function Dashboard() {
     e.preventDefault();
     try {
       await api.post('/projects/', formData);
-      alert('สร้างโครงการสำเร็จ! กรุณาแนบเอกสารให้ครบ');
+      alert('สร้างโครงการสำเร็จ!');
       setFormData({ title: '', review_type: 'exempt' });
       fetchProjects();
     } catch (err) { alert('เกิดข้อผิดพลาด'); }
@@ -48,18 +45,12 @@ export default function Dashboard() {
   const handleUpload = async (e) => {
     e.preventDefault();
     if (!file || !selectedProject || !uploadingDoc) return;
-    
     const uploadData = new FormData();
     uploadData.append('file', file);
-    
     try {
-      await api.post(`/projects/${selectedProject.id}/upload/${uploadingDoc}`, uploadData, { 
-        headers: { 'Content-Type': 'multipart/form-data' } 
-      });
+      await api.post(`/projects/${selectedProject.id}/upload/${uploadingDoc}`, uploadData, { headers: { 'Content-Type': 'multipart/form-data' } });
       alert('อัปโหลดสำเร็จ!');
-      setFile(null);
-      setUploadingDoc(null);
-      
+      setFile(null); setUploadingDoc(null);
       const updatedRes = await api.get('/projects/');
       setProjects(updatedRes.data);
       setSelectedProject(updatedRes.data.find(p => p.id === selectedProject.id));
@@ -70,7 +61,20 @@ export default function Dashboard() {
     try {
       const res = await api.get(`/projects/${projectId}/document/${docKey}`, { responseType: 'blob' });
       setPdfUrl(URL.createObjectURL(res.data));
-    } catch (err) { alert('ไม่พบไฟล์ หรือไฟล์ยังไม่ได้อัปโหลด'); }
+    } catch (err) { alert('ไม่พบไฟล์'); }
+  };
+
+  const handleDownloadCertificate = async (projectId) => {
+    try {
+      const res = await api.get(`/admin/projects/${projectId}/certificate`, { responseType: 'blob' });
+      const url = URL.createObjectURL(res.data);
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `certificate_${projectId}.pdf`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+    } catch (err) { alert('ไม่สามารถออกใบรับรองได้'); }
   };
 
   if (loading) return <div className="text-center mt-10">กำลังโหลด...</div>;
@@ -99,6 +103,7 @@ export default function Dashboard() {
               <th className="p-4 text-sm font-semibold">ชื่อโครงการ</th>
               <th className="p-4 text-sm font-semibold">เลข IRB</th>
               <th className="p-4 text-sm font-semibold">สถานะ</th>
+              <th className="p-4 text-sm font-semibold">ข้อเสนอแนะจาก IRB</th>
               <th className="p-4 text-sm font-semibold">เอกสาร</th>
             </tr>
           </thead>
@@ -109,13 +114,26 @@ export default function Dashboard() {
                 <td className="p-4 text-sm">{p.irb_number || <span className="text-slate-400">รอ จนท. ระบุ</span>}</td>
                 <td className="p-4 text-sm">
                   <span className={`px-2 py-1 rounded-full text-xs font-bold ${
-                    p.status === 'approved' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'
+                    p.status === 'approved' ? 'bg-green-100 text-green-700' : 
+                    p.status === 'needs_revision' ? 'bg-red-100 text-red-700' : 'bg-yellow-100 text-yellow-700'
                   }`}>
-                    {p.status === 'approved' ? 'อนุมัติแล้ว' : p.status}
+                    {p.status === 'approved' ? 'อนุมัติแล้ว' : p.status === 'needs_revision' ? 'ต้องแก้ไข' : p.status}
                   </span>
+                </td>
+                <td className="p-4 text-sm max-w-xs">
+                  {p.secretary_summary ? (
+                    <div className="text-xs text-slate-700 bg-slate-100 p-2 rounded line-clamp-3" title={p.secretary_summary}>
+                      {p.secretary_summary}
+                    </div>
+                  ) : (
+                    <span className="text-slate-400 text-xs">-</span>
+                  )}
                 </td>
                 <td className="p-4 text-sm">
                   <button onClick={() => setSelectedProject(p)} className="text-blue-600 hover:underline font-medium">จัดการเอกสาร</button>
+                  {p.status === 'approved' && (
+                    <button onClick={() => handleDownloadCertificate(p.id)} className="text-green-600 hover:underline font-medium ml-2">ใบรับรอง</button>
+                  )}
                 </td>
               </tr>
             ))}
@@ -134,13 +152,10 @@ export default function Dashboard() {
               </div>
               <button onClick={() => setSelectedProject(null)} className="text-red-500 hover:text-red-700 font-bold text-2xl">✕</button>
             </div>
-            
             <div className="flex-1 overflow-y-auto p-4 space-y-3">
               {docTypes.map((doc) => {
-                // [สำคัญ] ซ่อนฟอร์ม 9 และ 10 ถ้าโครงการยังไม่ approved
                 const isRenewalOrClosure = doc.key === 'doc_renewal_form' || doc.key === 'doc_closure_form';
                 if (isRenewalOrClosure && selectedProject.status !== 'approved') return null;
-
                 const isUploaded = selectedProject[doc.key];
                 return (
                   <div key={doc.key} className="flex flex-col md:flex-row md:items-center justify-between p-3 border rounded-lg hover:bg-slate-50 transition">

@@ -5,3 +5,5 @@ psycopg[binary]
 python-jose[cryptography]
 bcrypt==4.1.2
 python-multipart
+reportlab
+xhtml2pdf
