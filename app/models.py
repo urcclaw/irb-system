@@ -15,7 +15,6 @@ class User(Base):
     hashed_password = Column(String, nullable=False)
     is_active = Column(Boolean, default=True)
     totp_secret = Column(String, nullable=True)
-    
     projects = relationship("Project", back_populates="owner")
     audit_logs = relationship("AuditLog", back_populates="user")
     reviews = relationship("CommitteeReview", back_populates="reviewer")
@@ -25,6 +24,7 @@ class Project(Base):
     id = Column(Integer, primary_key=True, index=True)
     title = Column(String, nullable=False) 
     irb_number = Column(String, unique=True, index=True, nullable=True)
+    rec_number = Column(String, unique=True, nullable=True)
     review_type = Column(String, default="exempt")
     status = Column(String, default="pending_docs") 
     approval_date = Column(DateTime, nullable=True)
@@ -74,3 +74,10 @@ class DocumentTemplate(Base):
     fields_json = Column(Text, nullable=False)
     created_by = Column(Integer, ForeignKey("users.id"))
     created_at = Column(DateTime, default=datetime.utcnow)
+
+# ✅ ตารางใหม่: เก็บค่าตั้งต้นของระบบ
+class SystemSetting(Base):
+    __tablename__ = "system_settings"
+    id = Column(Integer, primary_key=True, index=True)
+    key = Column(String, unique=True, nullable=False)
+    value = Column(Text, nullable=False)

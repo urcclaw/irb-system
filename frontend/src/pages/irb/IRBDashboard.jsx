@@ -28,6 +28,33 @@ export default function IRBDashboard() {
   const [templateFormData, setTemplateFormData] = useState({});
   const [templateFields, setTemplateFields] = useState([]);
 
+  // State สำหรับ Modal ดูเอกสาร
+  const [viewDocsProject, setViewDocsProject] = useState(null);
+  const [pdfUrl, setPdfUrl] = useState(null);
+
+  // State สำหรับ Modal อัปโหลดใบรับรองที่เซนต์แล้ว
+  const [showUploadCertModal, setShowUploadCertModal] = useState(false);
+  const [certFile, setCertFile] = useState(null);
+
+  // ✅ State สำหรับ Modal คัดกรอง (Screening)
+  const [showScreeningModal, setShowScreeningModal] = useState(false);
+  const [screeningProject, setScreeningProject] = useState(null);
+  const [screeningAction, setScreeningAction] = useState('forward'); // forward, exempt, revision
+  const [exemptData, setExemptData] = useState({ approval_date: null, expiry_date: null });
+
+  const docTypes = [
+    { key: 'doc_proposal', label: '1. บันทึกข้อความ ข้อเสนอโครงการวิจัย' },
+    { key: 'doc_submission_form', label: '2. แบบฟอร์มขอส่งคำร้องขอยื่นเสนอขอรับการพิจารณาจริยธรรม' },
+    { key: 'doc_ethics_form', label: '3. แบบฟอร์มยื่นขอรับการพิจารณาจริยธรรม' },
+    { key: 'doc_self_assessment', label: '4. แบบฟอร์มการประเมินตนเองโดยผู้วิจัย (Self-Assessment)' },
+    { key: 'doc_consent_form', label: '5. แบบฟอร์มเอกสารแสดงความยินยอมเข้าร่วมในโครงการวิจัย' },
+    { key: 'doc_info_sheet', label: '6. แบบฟอร์มเอกสารข้อมูลคำอธิบายสำหรับผู้รับการวิจัย' },
+    { key: 'doc_coi_form', label: '7. แบบฟอร์มเปิดเผยการมีผลประโยชน์ทับซ้อนและทุนวิจัย' },
+    { key: 'doc_researcher_cv', label: '8. แบบฟอร์มประวัติผู้วิจัย' },
+    { key: 'doc_renewal_form', label: '9. แบบฟอร์มเอกสารต่ออายุโครงการวิจัย' },
+    { key: 'doc_closure_form', label: '10. แบบฟอร์มแจ้งปิดโครงการวิจัย' },
+  ];
+
   const generateTimeOptions = () => {
     const options = [];
     for (let i = 0; i < 24; i++) {
@@ -57,10 +84,20 @@ export default function IRBDashboard() {
     } catch (err) { console.error("Error fetching templates:", err); }
   };
 
-  const openSummaryModal = (project) => {
-    setSelectedProject(project);
-    setSummary(project.secretary_summary || '');
-    setFinalDecision(project.status === 'approved' ? 'approved' : 'needs_revision');
+  const openSummaryModal = async (project) => {
+    try {
+      const res = await api.get('/admin/projects');
+      const latestProject = res.data.find(p => p.id === project.id);
+      if (latestProject) {
+        setSelectedProject(latestProject);
+        setSummary(latestProject.secretary_summary || '');
+        setFinalDecision(latestProject.status === 'approved' ? 'approved' : 'needs_revision');
+      } else {
+        setSelectedProject(project);
+      }
+    } catch (err) {
+      setSelectedProject(project);
+    }
   };
 
   const handleSaveSummary = async (e) => {
@@ -105,7 +142,6 @@ export default function IRBDashboard() {
     } catch (err) { alert('เกิดข้อผิดพลาดในการสร้างหนังสือ'); }
   };
 
-  // ฟังก์ชัน通用 สำหรับดาวน์โหลด Report
   const downloadReport = async (endpoint, filename) => {
     try {
       const res = await api.get(endpoint, { responseType: 'blob' });
@@ -141,9 +177,81 @@ export default function IRBDashboard() {
     } catch (err) { alert('เกิดข้อผิดพลาดในการสร้างเอกสาร'); }
   };
 
+  // ✅ ฟังก์ชันดูไฟล์ PDF (แก้ไขให้ถูกต้อง)
+  const handleViewPdf = async (projectId, docKey) => {
+    try {
+      const res = await api.get(`/admin/projects/${projectId}/document/${docKey}`, { responseType: 'blob' });
+      const url = URL.createObjectURL(res.data);
+      setPdfUrl(url);
+    } catch (err) { 
+      alert('ไม่พบไฟล์ หรือไฟล์ยังไม่ได้อัปโหลด'); 
+    }
+  };
+
+  const handlePrintCertificate = async (projectId) => {
+    try {
+      const res = await api.get(`/admin/projects/${projectId}/certificate`, { responseType: 'blob' });
+      const url = URL.createObjectURL(res.data);
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `certificate_${projectId}.pdf`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+    } catch (err) { alert('ไม่สามารถพิมพ์ใบรับรองได้'); }
+  };
+
+  const handleUploadSignedCert = async (e) => {
+    e.preventDefault();
+    if (!certFile || !selectedProject) return;
+    
+    const uploadData = new FormData();
+    uploadData.append('file', certFile);
+    
+    try {
+      await api.post(`/admin/projects/${selectedProject.id}/upload-certificate`, uploadData, { 
+        headers: { 'Content-Type': 'multipart/form-data' } 
+      });
+      alert('อัปโหลดใบรับรองสำเร็จ!');
+      setCertFile(null);
+      setShowUploadCertModal(false);
+      fetchAllProjects();
+    } catch (err) { alert('อัปโหลดล้มเหลว'); }
+  };
+
+  // ✅ ฟังก์ชันคัดกรอง (Screening)
+  const handleScreeningSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      if (screeningAction === 'forward') {
+        await api.put(`/admin/projects/${screeningProject.id}/forward`);
+        alert('ส่งต่อให้คณะกรรมการพิจารณาเรียบร้อย');
+      } else if (screeningAction === 'exempt') {
+        if (!exemptData.approval_date || !exemptData.expiry_date) {
+          alert('กรุณาเลือกวันที่อนุมัติและวันหมดอายุ');
+          return;
+        }
+        await api.post(`/admin/projects/${screeningProject.id}/approve-exempt`, {
+          approval_date: new Date(exemptData.approval_date).toISOString(),
+          expiry_date: new Date(exemptData.expiry_date).toISOString()
+        });
+        alert('อนุมัติแบบยกเว้นสำเร็จ!');
+      } else if (screeningAction === 'revision') {
+        await api.put(`/admin/projects/${screeningProject.id}/summary`, {
+          summary: "กรุณาแก้ไขเอกสารให้เรียบร้อย",
+          final_decision: "needs_revision"
+        });
+        alert('ส่งกลับให้ผู้วิจัยแก้ไขเรียบร้อย');
+      }
+      setShowScreeningModal(false);
+      setScreeningProject(null);
+      fetchAllProjects();
+    } catch (err) { alert('เกิดข้อผิดพลาด'); }
+  };
+
   return (
     <div className="flex flex-col md:flex-row gap-6">
-      {/* ✅ Sidebar (เมนูด้านซ้าย) */}
+      {/* Sidebar */}
       <aside className="w-full md:w-64 bg-white rounded-xl shadow-sm border border-slate-200 p-4 h-fit sticky top-24">
         <h2 className="text-lg font-bold text-slate-800 mb-4 px-2">เมนูหลัก</h2>
         <nav className="space-y-1">
@@ -169,7 +277,7 @@ export default function IRBDashboard() {
         </nav>
       </aside>
 
-      {/* ✅ Main Content (เนื้อหาด้านขวา) */}
+      {/* Main Content */}
       <main className="flex-1 space-y-6">
         {/* Header */}
         <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200 flex justify-between items-center">
@@ -213,7 +321,11 @@ export default function IRBDashboard() {
               <thead className="bg-slate-50 border-b">
                 <tr>
                   <th className="p-4 text-sm font-semibold text-slate-600">ชื่อโครงการ</th>
+                  <th className="p-4 text-sm font-semibold text-slate-600">รหัส REC</th>
                   <th className="p-4 text-sm font-semibold text-slate-600">สถานะ</th>
+                  <th className="p-4 text-sm font-semibold text-slate-600">วันอนุมัติ</th>
+                  <th className="p-4 text-sm font-semibold text-slate-600">วันหมดอายุ</th>
+                  <th className="p-4 text-sm font-semibold text-slate-600">เอกสาร</th>
                   <th className="p-4 text-sm font-semibold text-slate-600 text-right">การจัดการ</th>
                 </tr>
               </thead>
@@ -221,17 +333,52 @@ export default function IRBDashboard() {
                 {projects.map(p => (
                   <tr key={p.id} className="border-b hover:bg-slate-50 transition">
                     <td className="p-4 text-sm text-slate-800 font-medium">{p.title}</td>
+                    <td className="p-4 text-sm font-bold text-blue-600">
+                      {p.rec_number || <span className="text-slate-400">รอ จนท. ระบุ</span>}
+                    </td>
                     <td className="p-4 text-sm">
                       <span className={`px-2.5 py-1 rounded-full text-xs font-bold ${
                         p.status === 'approved' ? 'bg-green-100 text-green-700' : 
-                        p.status === 'forwarded' ? 'bg-indigo-100 text-indigo-700' :
+                        p.status === 'needs_revision' ? 'bg-red-100 text-red-700' :
                         'bg-yellow-100 text-yellow-700'
                       }`}>
-                        {p.status}
+                        {p.status === 'approved' ? 'อนุมัติแล้ว' : p.status === 'needs_revision' ? 'ต้องแก้ไข' : p.status}
                       </span>
                     </td>
-                    <td className="p-4 text-sm text-right">
-                      <button onClick={() => openSummaryModal(p)} className="text-blue-600 hover:text-blue-800 hover:underline font-medium">รวบรวมความเห็น/สรุปผล</button>
+                    <td className="p-4 text-sm">
+                      {p.approval_date ? new Date(p.approval_date).toLocaleDateString('th-TH') : '-'}
+                    </td>
+                    <td className="p-4 text-sm">
+                      {p.expiry_date ? new Date(p.expiry_date).toLocaleDateString('th-TH') : '-'}
+                    </td>
+                    <td className="p-4 text-sm">
+                      <button onClick={() => setViewDocsProject(p)} className="text-blue-600 hover:underline font-medium">
+                        ตรวจสอบเอกสาร ({Object.values(p.docs).filter(Boolean).length}/10)
+                      </button>
+                    </td>
+                    <td className="p-4 text-sm text-right space-y-1">
+                      {/* ✅ ปุ่มคัดกรองสำหรับเจ้าหน้าที่ */}
+                      {(p.status === 'pending_docs' || p.status === 'under_review') && (
+                        <button 
+                          onClick={() => { 
+                            setScreeningProject(p); 
+                            setScreeningAction('forward'); 
+                            setShowScreeningModal(true); 
+                          }} 
+                          className="text-purple-600 hover:text-purple-800 hover:underline font-medium block"
+                        >
+                          คัดกรอง / พิจารณา
+                        </button>
+                      )}
+
+                      <button onClick={() => openSummaryModal(p)} className="text-indigo-600 hover:text-indigo-800 hover:underline font-medium block">รวบรวมความเห็น/สรุปผล</button>
+                      
+                      {(p.status === 'approved' || p.status === 'needs_revision') && (
+                        <div className="flex flex-col gap-1 mt-2">
+                          <button onClick={() => handlePrintCertificate(p.id)} className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded hover:bg-green-200">🖨️ พิมพ์ใบรับรอง</button>
+                          <button onClick={() => { setSelectedProject(p); setShowUploadCertModal(true); }} className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded hover:bg-blue-200">📤 อัปโหลดใบรับรองที่เซนต์แล้ว</button>
+                        </div>
+                      )}
                     </td>
                   </tr>
                 ))}
@@ -240,6 +387,123 @@ export default function IRBDashboard() {
           </div>
         </div>
       </main>
+
+      {/* ✅ Modal ตรวจสอบเอกสาร (มีปุ่มดูไฟล์ PDF) */}
+      {viewDocsProject && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-xl shadow-xl w-full max-w-3xl h-[85vh] flex flex-col overflow-hidden">
+            <div className="flex justify-between items-center p-4 border-b bg-slate-50">
+              <div>
+                <h3 className="text-lg font-bold text-slate-800">ตรวจสอบเอกสาร</h3>
+                <p className="text-sm text-slate-500">{viewDocsProject.title}</p>
+                <p className="text-xs text-blue-600 font-bold">รหัส REC: {viewDocsProject.rec_number || '-'}</p>
+              </div>
+              <button onClick={() => setViewDocsProject(null)} className="text-red-500 hover:text-red-700 font-bold text-2xl">✕</button>
+            </div>
+            
+            <div className="flex-1 overflow-y-auto p-4 space-y-3">
+              {docTypes.map((doc) => {
+                const isRenewalOrClosure = doc.key === 'doc_renewal_form' || doc.key === 'doc_closure_form';
+                if (isRenewalOrClosure && viewDocsProject.status !== 'approved') return null;
+
+                const isUploaded = viewDocsProject.docs[doc.key];
+                return (
+                  <div key={doc.key} className="flex flex-col md:flex-row md:items-center justify-between p-3 border rounded-lg hover:bg-slate-50">
+                    <span className="text-sm font-medium text-slate-700 mb-2 md:mb-0 md:pr-4">{doc.label}</span>
+                    <div>
+                      {isUploaded ? (
+                        <button 
+                          onClick={() => handleViewPdf(viewDocsProject.id, doc.key)} 
+                          className="bg-green-100 text-green-700 px-3 py-1 rounded text-sm hover:bg-green-200 font-medium"
+                        >
+                          ดูไฟล์ PDF
+                        </button>
+                      ) : (
+                        <span className="bg-red-50 text-red-500 px-3 py-1 rounded text-sm border border-red-100">ยังไม่แนบ</span>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+            <div className="p-4 border-t bg-slate-50 text-right">
+              <button onClick={() => setViewDocsProject(null)} className="px-6 py-2 bg-slate-800 text-white rounded-lg hover:bg-slate-900">ปิด</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ✅ Modal แสดง PDF */}
+      {pdfUrl && (
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center p-4 z-[70]">
+           <div className="bg-white rounded-xl shadow-xl w-full max-w-5xl h-[90vh] flex flex-col overflow-hidden">
+            <div className="flex justify-between items-center p-4 border-b bg-slate-50">
+              <h3 className="text-lg font-bold">เอกสาร PDF</h3>
+              <button onClick={() => setPdfUrl(null)} className="text-red-500 text-xl font-bold">✕</button>
+            </div>
+            <div className="flex-1 bg-slate-200">
+              <object data={pdfUrl} type="application/pdf" width="100%" height="100%">
+                <p className="text-center mt-10">เบราว์เซอร์ไม่รองรับการแสดง PDF <a href={pdfUrl} download className="text-blue-600 underline">คลิกเพื่อดาวน์โหลด</a></p>
+              </object>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal คัดกรอง (Screening) */}
+      {showScreeningModal && screeningProject && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white p-6 rounded-xl shadow-xl max-w-lg w-full">
+            <h3 className="text-lg font-bold mb-4">คัดกรองโครงการ: {screeningProject.title}</h3>
+            <form onSubmit={handleScreeningSubmit} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium mb-1">ผลการคัดกรอง</label>
+                <select 
+                  value={screeningAction} 
+                  onChange={e => setScreeningAction(e.target.value)} 
+                  className="w-full border p-2 rounded-lg"
+                >
+                  <option value="forward">ส่งต่อให้คณะกรรมการพิจารณา</option>
+                  <option value="exempt">อนุมัติแบบยกเว้น (ไม่ต้องเข้าคณะกรรมการ)</option>
+                  <option value="revision">ส่งกลับให้ผู้วิจัยแก้ไข</option>
+                </select>
+              </div>
+
+              {screeningAction === 'exempt' && (
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium mb-1">วันอนุมัติ</label>
+                    <Datepicker 
+                      value={exemptData.approval_date ? { startDate: exemptData.approval_date, endDate: exemptData.approval_date } : { startDate: null, endDate: null }} 
+                      onChange={newValue => setExemptData({...exemptData, approval_date: newValue.startDate})} 
+                      displayFormat="DD/MM/YYYY" 
+                      useRange={false} asSingle={true} 
+                      placeholder="เลือกวันที่" 
+                      containerClassName="relative w-full"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-1">วันหมดอายุ</label>
+                    <Datepicker 
+                      value={exemptData.expiry_date ? { startDate: exemptData.expiry_date, endDate: exemptData.expiry_date } : { startDate: null, endDate: null }} 
+                      onChange={newValue => setExemptData({...exemptData, expiry_date: newValue.startDate})} 
+                      displayFormat="DD/MM/YYYY" 
+                      useRange={false} asSingle={true} 
+                      placeholder="เลือกวันที่" 
+                      containerClassName="relative w-full"
+                    />
+                  </div>
+                </div>
+              )}
+
+              <div className="flex justify-end space-x-2 pt-2">
+                <button type="button" onClick={() => setShowScreeningModal(false)} className="px-4 py-2 border rounded-lg">ยกเลิก</button>
+                <button type="submit" className="px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700">ยืนยันการคัดกรอง</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
       {/* Modal สรุปผลของเลขา */}
       {selectedProject && (
@@ -283,6 +547,23 @@ export default function IRBDashboard() {
                 </div>
               </form>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal อัปโหลดใบรับรองที่เซนต์แล้ว */}
+      {showUploadCertModal && selectedProject && (
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center p-4 z-[60]">
+          <div className="bg-white p-6 rounded-xl shadow-xl max-w-md w-full">
+            <h3 className="text-lg font-bold mb-2">อัปโหลดใบรับรองที่เซนต์แล้ว</h3>
+            <p className="text-sm text-slate-600 mb-4">โครงการ: {selectedProject.title}</p>
+            <form onSubmit={handleUploadSignedCert}>
+              <input type="file" accept=".pdf" onChange={e => setCertFile(e.target.files[0])} className="w-full mb-4" required />
+              <div className="flex justify-end space-x-2">
+                <button type="button" onClick={() => setShowUploadCertModal(false)} className="px-4 py-2 border rounded-lg hover:bg-slate-50">ยกเลิก</button>
+                <button type="submit" className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">อัปโหลด</button>
+              </div>
+            </form>
           </div>
         </div>
       )}
@@ -392,6 +673,23 @@ export default function IRBDashboard() {
                 </form>
               </>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* Modal แสดง PDF */}
+      {pdfUrl && (
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center p-4 z-[70]">
+           <div className="bg-white rounded-xl shadow-xl w-full max-w-5xl h-[90vh] flex flex-col overflow-hidden">
+            <div className="flex justify-between items-center p-4 border-b bg-slate-50">
+              <h3 className="text-lg font-bold">เอกสาร PDF</h3>
+              <button onClick={() => setPdfUrl(null)} className="text-red-500 text-xl font-bold">✕</button>
+            </div>
+            <div className="flex-1 bg-slate-200">
+              <object data={pdfUrl} type="application/pdf" width="100%" height="100%">
+                <p className="text-center mt-10">เบราว์เซอร์ไม่รองรับการแสดง PDF <a href={pdfUrl} download className="text-blue-600 underline">คลิกเพื่อดาวน์โหลด</a></p>
+              </object>
+            </div>
           </div>
         </div>
       )}

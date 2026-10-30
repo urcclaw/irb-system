@@ -5,11 +5,19 @@ export default function Dashboard() {
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
   const [formData, setFormData] = useState({ title: '', review_type: 'exempt' });
+  
+  // State สำหรับ Modal จัดการเอกสาร
   const [selectedProject, setSelectedProject] = useState(null); 
   const [uploadingDoc, setUploadingDoc] = useState(null); 
   const [file, setFile] = useState(null);
   const [pdfUrl, setPdfUrl] = useState(null);
 
+  // ✅ State สำหรับ Modal ยื่นคำร้อง (ต่ออายุ, แก้ไข, ปิดโครงการ)
+  const [showRequestModal, setShowRequestModal] = useState(false);
+  const [requestType, setRequestType] = useState('renewal'); // renewal, amendment, closure
+  const [requestProject, setRequestProject] = useState(null);
+
+  // รายการเอกสารทั้ง 10 ประเภท
   const docTypes = [
     { key: 'doc_proposal', label: '1. บันทึกข้อความ ข้อเสนอโครงการวิจัย' },
     { key: 'doc_submission_form', label: '2. แบบฟอร์มขอส่งคำร้องขอยื่นเสนอขอรับการพิจารณาจริยธรรม' },
@@ -19,8 +27,8 @@ export default function Dashboard() {
     { key: 'doc_info_sheet', label: '6. แบบฟอร์มเอกสารข้อมูลคำอธิบายสำหรับผู้รับการวิจัย' },
     { key: 'doc_coi_form', label: '7. แบบฟอร์มเปิดเผยการมีผลประโยชน์ทับซ้อนและทุนวิจัย' },
     { key: 'doc_researcher_cv', label: '8. แบบฟอร์มประวัติผู้วิจัย' },
-    { key: 'doc_renewal_form', label: '9. แบบฟอร์มเอกสารต่ออายุโครงการวิจัย (สำหรับโครงการที่อนุมัติแล้ว)' },
-    { key: 'doc_closure_form', label: '10. แบบฟอร์มแจ้งปิดโครงการวิจัย (สำหรับโครงการที่อนุมัติแล้ว)' },
+    { key: 'doc_renewal_form', label: '9. แบบฟอร์มเอกสารต่ออายุโครงการวิจัย' },
+    { key: 'doc_closure_form', label: '10. แบบฟอร์มแจ้งปิดโครงการวิจัย' },
   ];
 
   useEffect(() => { fetchProjects(); }, []);
@@ -36,7 +44,7 @@ export default function Dashboard() {
     e.preventDefault();
     try {
       await api.post('/projects/', formData);
-      alert('สร้างโครงการสำเร็จ!');
+      alert('สร้างโครงการสำเร็จ! กรุณาแนบเอกสาร');
       setFormData({ title: '', review_type: 'exempt' });
       fetchProjects();
     } catch (err) { alert('เกิดข้อผิดพลาด'); }
@@ -77,12 +85,32 @@ export default function Dashboard() {
     } catch (err) { alert('ไม่สามารถออกใบรับรองได้'); }
   };
 
+  // ✅ ฟังก์ชันยื่นคำร้องใหม่ (ต่ออายุ, แก้ไข, ปิด)
+  const handleSubmitRequest = async (e) => {
+    e.preventDefault();
+    try {
+      // ส่งคำร้องไปที่ API ใหม่ (Backend จะเปลี่ยนสถานะเป็น needs_revision หรือ pending_docs)
+      await api.post(`/projects/${requestProject.id}/request/${requestType}`);
+      alert('ส่งคำร้องเรียบร้อย! กรุณาอัปโหลดเอกสารเพิ่มเติม');
+      setShowRequestModal(false);
+      setRequestProject(null);
+      fetchProjects();
+    } catch (err) {
+      alert('เกิดข้อผิดพลาดในการส่งคำร้อง');
+    }
+  };
+
+  const isDocumentLocked = (status) => {
+    return ['approved', 'forwarded', 'under_review'].includes(status);
+  };
+
   if (loading) return <div className="text-center mt-10">กำลังโหลด...</div>;
 
   return (
     <div className="space-y-8">
       <h1 className="text-2xl font-bold text-slate-800">หน้าจอจัดการโครงการ</h1>
 
+      {/* ฟอร์มสร้างโครงการใหม่ */}
       <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
         <h2 className="text-lg font-semibold mb-4">ยื่นขออนุมัติโครงการใหม่</h2>
         <form onSubmit={handleCreate} className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -96,6 +124,7 @@ export default function Dashboard() {
         </form>
       </div>
 
+      {/* ตารางรายการโครงการ */}
       <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
         <table className="w-full text-left">
           <thead className="bg-slate-50 border-b">
@@ -103,7 +132,8 @@ export default function Dashboard() {
               <th className="p-4 text-sm font-semibold">ชื่อโครงการ</th>
               <th className="p-4 text-sm font-semibold">เลข IRB</th>
               <th className="p-4 text-sm font-semibold">สถานะ</th>
-              <th className="p-4 text-sm font-semibold">ข้อเสนอแนะจาก IRB</th>
+              <th className="p-4 text-sm font-semibold">วันอนุมัติ</th>
+              <th className="p-4 text-sm font-semibold">วันหมดอายุ</th>
               <th className="p-4 text-sm font-semibold">เอกสาร</th>
             </tr>
           </thead>
@@ -120,19 +150,21 @@ export default function Dashboard() {
                     {p.status === 'approved' ? 'อนุมัติแล้ว' : p.status === 'needs_revision' ? 'ต้องแก้ไข' : p.status}
                   </span>
                 </td>
-                <td className="p-4 text-sm max-w-xs">
-                  {p.secretary_summary ? (
-                    <div className="text-xs text-slate-700 bg-slate-100 p-2 rounded line-clamp-3" title={p.secretary_summary}>
-                      {p.secretary_summary}
-                    </div>
-                  ) : (
-                    <span className="text-slate-400 text-xs">-</span>
-                  )}
-                </td>
-                <td className="p-4 text-sm">
+                <td className="p-4 text-sm">{p.approval_date ? new Date(p.approval_date).toLocaleDateString('th-TH') : '-'}</td>
+                <td className="p-4 text-sm">{p.expiry_date ? new Date(p.expiry_date).toLocaleDateString('th-TH') : '-'}</td>
+                <td className="p-4 text-sm space-x-2">
                   <button onClick={() => setSelectedProject(p)} className="text-blue-600 hover:underline font-medium">จัดการเอกสาร</button>
                   {p.status === 'approved' && (
-                    <button onClick={() => handleDownloadCertificate(p.id)} className="text-green-600 hover:underline font-medium ml-2">ใบรับรอง</button>
+                    <>
+                      <button onClick={() => handleDownloadCertificate(p.id)} className="text-green-600 hover:underline font-medium">ใบรับรอง</button>
+                      
+                      {/* ✅ ปุ่มยื่นคำร้อง (ต่ออายุ, แก้ไข, ปิด) */}
+                      <div className="mt-2 flex gap-1">
+                        <button onClick={() => { setRequestProject(p); setRequestType('renewal'); setShowRequestModal(true); }} className="text-xs bg-indigo-100 text-indigo-700 px-2 py-1 rounded hover:bg-indigo-200">ต่ออายุ</button>
+                        <button onClick={() => { setRequestProject(p); setRequestType('amendment'); setShowRequestModal(true); }} className="text-xs bg-yellow-100 text-yellow-700 px-2 py-1 rounded hover:bg-yellow-200">ขอแก้ไข</button>
+                        <button onClick={() => { setRequestProject(p); setRequestType('closure'); setShowRequestModal(true); }} className="text-xs bg-red-100 text-red-700 px-2 py-1 rounded hover:bg-red-200">ปิดโครงการ</button>
+                      </div>
+                    </>
                   )}
                 </td>
               </tr>
@@ -140,6 +172,31 @@ export default function Dashboard() {
           </tbody>
         </table>
       </div>
+
+      {/* Modal ยื่นคำร้อง */}
+      {showRequestModal && requestProject && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white p-6 rounded-xl shadow-xl max-w-md w-full">
+            <h3 className="text-lg font-bold mb-2">ยื่นคำร้อง</h3>
+            <p className="text-sm text-slate-600 mb-4">
+              โครงการ: <strong>{requestProject.title}</strong> <br/>
+              ประเภทคำร้อง: 
+              <span className="font-bold text-blue-600 ml-1">
+                {requestType === 'renewal' ? 'ขอต่ออายุโครงการ' : requestType === 'amendment' ? 'ขอแก้ไขโครงการ' : 'แจ้งปิดโครงการ'}
+              </span>
+            </p>
+            <form onSubmit={handleSubmitRequest}>
+              <div className="mb-4 text-sm text-slate-500 bg-blue-50 p-3 rounded-lg">
+                เมื่อยืนยันแล้ว สถานะโครงการจะเปลี่ยนเป็น <strong>"ต้องแก้ไข"</strong> เพื่อให้คุณสามารถอัปโหลดเอกสารใหม่ได้
+              </div>
+              <div className="flex justify-end space-x-2">
+                <button type="button" onClick={() => setShowRequestModal(false)} className="px-4 py-2 border rounded-lg hover:bg-slate-50">ยกเลิก</button>
+                <button type="submit" className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">ยืนยันการยื่นคำร้อง</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
       {/* Modal จัดการเอกสาร */}
       {selectedProject && (
@@ -149,6 +206,12 @@ export default function Dashboard() {
               <div>
                 <h3 className="text-lg font-bold text-slate-800">จัดการเอกสารโครงการ</h3>
                 <p className="text-sm text-slate-500">{selectedProject.title}</p>
+                {selectedProject.approval_date && (
+                  <p className="text-xs text-green-600 mt-1">
+                    อนุมัติเมื่อ: {new Date(selectedProject.approval_date).toLocaleDateString('th-TH')} | 
+                    หมดอายุ: {new Date(selectedProject.expiry_date).toLocaleDateString('th-TH')}
+                  </p>
+                )}
               </div>
               <button onClick={() => setSelectedProject(null)} className="text-red-500 hover:text-red-700 font-bold text-2xl">✕</button>
             </div>
@@ -156,18 +219,32 @@ export default function Dashboard() {
               {docTypes.map((doc) => {
                 const isRenewalOrClosure = doc.key === 'doc_renewal_form' || doc.key === 'doc_closure_form';
                 if (isRenewalOrClosure && selectedProject.status !== 'approved') return null;
+                
                 const isUploaded = selectedProject[doc.key];
+                const locked = isDocumentLocked(selectedProject.status);
+
                 return (
-                  <div key={doc.key} className="flex flex-col md:flex-row md:items-center justify-between p-3 border rounded-lg hover:bg-slate-50 transition">
-                    <span className="text-sm font-medium text-slate-700 mb-2 md:mb-0 md:pr-4">{doc.label}</span>
+                  <div key={doc.key} className={`flex flex-col md:flex-row md:items-center justify-between p-3 border rounded-lg ${locked ? 'bg-slate-100' : 'hover:bg-slate-50'} transition`}>
+                    <span className={`text-sm font-medium ${locked ? 'text-slate-500' : 'text-slate-700'} mb-2 md:mb-0 md:pr-4`}>
+                      {doc.label}
+                      {locked && <span className="ml-2 text-xs text-red-500">🔒 ล็อก</span>}
+                    </span>
                     <div className="flex space-x-2 shrink-0">
                       {isUploaded ? (
                         <>
                           <button onClick={() => handleViewPdf(selectedProject.id, doc.key)} className="bg-green-100 text-green-700 px-3 py-1 rounded text-sm hover:bg-green-200">ดูไฟล์ PDF</button>
-                          <button onClick={() => setUploadingDoc(doc.key)} className="bg-slate-200 text-slate-700 px-3 py-1 rounded text-sm hover:bg-slate-300">เปลี่ยนไฟล์</button>
+                          {!locked && (
+                            <button onClick={() => setUploadingDoc(doc.key)} className="bg-slate-200 text-slate-700 px-3 py-1 rounded text-sm hover:bg-slate-300">เปลี่ยนไฟล์</button>
+                          )}
                         </>
                       ) : (
-                        <button onClick={() => setUploadingDoc(doc.key)} className="bg-blue-600 text-white px-3 py-1 rounded text-sm hover:bg-blue-700">อัปโหลด</button>
+                        <>
+                          {!locked ? (
+                            <button onClick={() => setUploadingDoc(doc.key)} className="bg-blue-600 text-white px-3 py-1 rounded text-sm hover:bg-blue-700">อัปโหลด</button>
+                          ) : (
+                            <span className="text-xs text-red-500">ไม่สามารถอัปโหลดได้</span>
+                          )}
+                        </>
                       )}
                     </div>
                   </div>
