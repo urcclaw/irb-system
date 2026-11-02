@@ -2,23 +2,28 @@ from pathlib import Path
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
+
+# Import จากโมดูลภายในแอป (ใช้ Relative Import เพราะไฟล์นี้อยู่ในโฟลเดอร์ app/)
 from .models import Base
 from .database import engine
-from .routers import auth, admin, projects  # <-- ลบ todos, users ออก และเพิ่ม projects
+from .routers import auth, admin, projects, assessments
 
+# 1. ประกาศตัวแปร app เป็นอันดับแรก (สำคัญมาก!)
 app = FastAPI(root_path="/api") 
 
+# 2. สร้างตารางในฐานข้อมูลอัตโนมัติ (ถ้ายังไม่มี)
 Base.metadata.create_all(bind=engine)
 
-# CORS for React (เพิ่มพอร์ต 8080 สำหรับ Docker Frontend)
+# 3. ตั้งค่า CORS เพื่อให้ Frontend (React) เรียกใช้ API ได้
 origins = [
     "http://localhost:5173",
     "http://127.0.0.1:5173",
     "http://localhost:3000",
     "http://127.0.0.1:3000",
-    "http://localhost:8080",   # <-- เพิ่มสำหรับ Docker
-    "http://127.0.0.1:8080",   # <-- เพิ่มสำหรับ Docker
+    "http://localhost:8080",   # สำหรับ Docker Frontend
+    "http://127.0.0.1:8080",
 ]
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
@@ -27,11 +32,13 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# API routers
+# 4. ลงทะเบียน API Routers (ต้องอยู่หลังจากประกาศ app แล้วเท่านั้น)
 app.include_router(auth.router)
+app.include_router(projects.router)
 app.include_router(admin.router)
-app.include_router(projects.router) # <-- เปลี่ยนจาก todos เป็น projects
+app.include_router(assessments.router)
 
+# 5. Health Check Endpoint สำหรับตรวจสอบว่า Backend ทำงานปกติ
 @app.get("/healthy")
 def health_check():
-    return {"status": "Healthy"}
+    return {"status": "Healthy", "message": "IRB System Backend is running!"}

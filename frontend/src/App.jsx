@@ -6,6 +6,8 @@ import Register from "./pages/auth/Register.jsx";
 import Dashboard from "./pages/projects/Dashboard.jsx";
 import IRBDashboard from "./pages/irb/IRBDashboard.jsx";
 import CommitteeDashboard from "./pages/irb/CommitteeDashboard.jsx";
+import AssessmentForm from "./pages/irb/AssessmentForm.jsx";
+import AssessmentSummary from "./pages/irb/AssessmentSummary.jsx"; // ✅ Import แล้ว
 import SystemSettings from "./pages/admin/SystemSettings.jsx";
 import UserManagement from "./pages/admin/UserManagement.jsx";
 import BackupManager from "./pages/admin/BackupManager.jsx";
@@ -30,10 +32,24 @@ export default function App() {
           <Route path="/login" element={isAuthed ? <Navigate to="/" /> : <Login />} />
           <Route path="/register" element={isAuthed ? <Navigate to="/" /> : <Register />} />
           
+          {/* Protected Routes สำหรับ Dashboard ต่างๆ */}
           <Route path="/dashboard" element={isAuthed && (role === 'pi' || role === 'assistant') ? <Dashboard /> : <Navigate to="/" />} />
           <Route path="/irb-dashboard" element={isAuthed && (role === 'irb_officer' || role === 'admin') ? <IRBDashboard /> : <Navigate to="/" />} />
           <Route path="/committee-dashboard" element={isAuthed && (role === 'committee' || role === 'admin') ? <CommitteeDashboard /> : <Navigate to="/" />} />
           
+          {/* ✅ Route สำหรับหน้าแบบประเมินจริยธรรมการวิจัย (สำหรับ Committee) */}
+          <Route 
+            path="/projects/:projectId/assess" 
+            element={isAuthed && (role === 'committee' || role === 'irb_officer' || role === 'admin') ? <AssessmentForm /> : <Navigate to="/" />} 
+          />
+
+          {/* ✅ Route ใหม่สำหรับหน้าสรุปผลการประเมิน (สำหรับ IRB Officer / Admin) */}
+          <Route 
+            path="/projects/:projectId/assessment-summary" 
+            element={isAuthed && (role === 'irb_officer' || role === 'admin') ? <AssessmentSummary /> : <Navigate to="/" />} 
+          />
+
+          {/* Admin Routes */}
           <Route path="/admin/settings" element={isAuthed && role === 'admin' ? <SystemSettings /> : <Navigate to="/" />} />
           <Route path="/admin/users" element={isAuthed && role === 'admin' ? <UserManagement /> : <Navigate to="/" />} />
           <Route path="/admin/backup" element={isAuthed && role === 'admin' ? <BackupManager /> : <Navigate to="/" />} />

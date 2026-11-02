@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import api from '../../api';
 import Datepicker from "react-tailwindcss-datepicker";
+import { Link } from 'react-router-dom';
 
 export default function IRBDashboard() {
   const [projects, setProjects] = useState([]);
@@ -17,7 +18,7 @@ export default function IRBDashboard() {
     doc_number: 'สธ 0315.2(40.1)/', 
     time_start: '09:00', 
     time_end: '16:00',
-    location: 'ห้องประชุมสิทธิก ร บุญฉิม', 
+    location: 'ห้องประชุมสิทธิกร บุญฉิม', 
     agenda: '1. เรื่องแจ้งเพื่อทราบ\n2. เรื่องพิจารณาโครงการวิจัย'
   });
 
@@ -39,7 +40,7 @@ export default function IRBDashboard() {
   // ✅ State สำหรับ Modal คัดกรอง (Screening)
   const [showScreeningModal, setShowScreeningModal] = useState(false);
   const [screeningProject, setScreeningProject] = useState(null);
-  const [screeningAction, setScreeningAction] = useState('forward'); // forward, exempt, revision
+  const [screeningAction, setScreeningAction] = useState('forward');
   const [exemptData, setExemptData] = useState({ approval_date: null, expiry_date: null });
 
   const docTypes = [
@@ -177,7 +178,6 @@ export default function IRBDashboard() {
     } catch (err) { alert('เกิดข้อผิดพลาดในการสร้างเอกสาร'); }
   };
 
-  // ✅ ฟังก์ชันดูไฟล์ PDF (แก้ไขให้ถูกต้อง)
   const handleViewPdf = async (projectId, docKey) => {
     try {
       const res = await api.get(`/admin/projects/${projectId}/document/${docKey}`, { responseType: 'blob' });
@@ -188,6 +188,7 @@ export default function IRBDashboard() {
     }
   };
 
+  // ✅ ฟังก์ชันพิมพ์ใบรับรอง
   const handlePrintCertificate = async (projectId) => {
     try {
       const res = await api.get(`/admin/projects/${projectId}/certificate`, { responseType: 'blob' });
@@ -198,7 +199,9 @@ export default function IRBDashboard() {
       document.body.appendChild(link);
       link.click();
       link.remove();
-    } catch (err) { alert('ไม่สามารถพิมพ์ใบรับรองได้'); }
+    } catch (err) { 
+      alert('ไม่สามารถพิมพ์ใบรับรองได้: ' + (err.response?.data?.detail || err.message)); 
+    }
   };
 
   const handleUploadSignedCert = async (e) => {
@@ -219,7 +222,6 @@ export default function IRBDashboard() {
     } catch (err) { alert('อัปโหลดล้มเหลว'); }
   };
 
-  // ✅ ฟังก์ชันคัดกรอง (Screening)
   const handleScreeningSubmit = async (e) => {
     e.preventDefault();
     try {
@@ -353,10 +355,10 @@ export default function IRBDashboard() {
                     </td>
                     <td className="p-4 text-sm">
                       <button onClick={() => setViewDocsProject(p)} className="text-blue-600 hover:underline font-medium">
-                        ตรวจสอบเอกสาร ({Object.values(p.docs).filter(Boolean).length}/10)
+                        ตรวจสอบเอกสาร ({Object.values(p.docs || {}).filter(Boolean).length}/10)
                       </button>
                     </td>
-                    <td className="p-4 text-sm text-right space-y-1">
+                    <td className="p-4 text-sm text-right space-y-2">
                       {/* ✅ ปุ่มคัดกรองสำหรับเจ้าหน้าที่ */}
                       {(p.status === 'pending_docs' || p.status === 'under_review') && (
                         <button 
@@ -371,12 +373,28 @@ export default function IRBDashboard() {
                         </button>
                       )}
 
-                      <button onClick={() => openSummaryModal(p)} className="text-indigo-600 hover:text-indigo-800 hover:underline font-medium block">รวบรวมความเห็น/สรุปผล</button>
+                      {/* ✅ ปุ่มดูสรุปผลประเมิน */}
+                      <Link 
+                        to={`/projects/${p.id}/assessment-summary`} 
+                        className="text-indigo-600 hover:text-indigo-800 hover:underline font-medium flex items-center justify-end gap-1"
+                      >
+                        📊 ดูสรุปผลประเมิน
+                      </Link>
                       
-                      {(p.status === 'approved' || p.status === 'needs_revision') && (
-                        <div className="flex flex-col gap-1 mt-2">
-                          <button onClick={() => handlePrintCertificate(p.id)} className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded hover:bg-green-200">🖨️ พิมพ์ใบรับรอง</button>
-                          <button onClick={() => { setSelectedProject(p); setShowUploadCertModal(true); }} className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded hover:bg-blue-200">📤 อัปโหลดใบรับรองที่เซนต์แล้ว</button>
+                      {/* ✅ ปุ่มพิมพ์ใบรับรอง - แสดงเฉพาะเมื่อ final_decision = 'approved' */}
+                      {p.final_decision === 'approved' && (
+                        <button 
+                          onClick={() => handlePrintCertificate(p.id)} 
+                          className="text-xs bg-green-600 text-white px-3 py-1.5 rounded hover:bg-green-700 font-medium flex items-center gap-1 mx-auto"
+                        >
+                          🖨️ พิมพ์ใบรับรอง
+                        </button>
+                      )}
+
+                      {/* ✅ ปุ่มอัปโหลดใบรับรองที่เซ็นแล้ว - แสดงเฉพาะเมื่อมีไฟล์ certificate_path */}
+                      {p.certificate_path && (
+                        <div className="text-xs text-green-700 bg-green-50 px-2 py-1 rounded">
+                          ✅ มีใบรับรองที่เซ็นแล้ว
                         </div>
                       )}
                     </td>
@@ -388,7 +406,7 @@ export default function IRBDashboard() {
         </div>
       </main>
 
-      {/* ✅ Modal ตรวจสอบเอกสาร (มีปุ่มดูไฟล์ PDF) */}
+      {/* Modal ตรวจสอบเอกสาร */}
       {viewDocsProject && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-xl shadow-xl w-full max-w-3xl h-[85vh] flex flex-col overflow-hidden">
@@ -406,7 +424,7 @@ export default function IRBDashboard() {
                 const isRenewalOrClosure = doc.key === 'doc_renewal_form' || doc.key === 'doc_closure_form';
                 if (isRenewalOrClosure && viewDocsProject.status !== 'approved') return null;
 
-                const isUploaded = viewDocsProject.docs[doc.key];
+                const isUploaded = viewDocsProject.docs && viewDocsProject.docs[doc.key];
                 return (
                   <div key={doc.key} className="flex flex-col md:flex-row md:items-center justify-between p-3 border rounded-lg hover:bg-slate-50">
                     <span className="text-sm font-medium text-slate-700 mb-2 md:mb-0 md:pr-4">{doc.label}</span>
@@ -433,7 +451,7 @@ export default function IRBDashboard() {
         </div>
       )}
 
-      {/* ✅ Modal แสดง PDF */}
+      {/* Modal แสดง PDF */}
       {pdfUrl && (
         <div className="fixed inset-0 bg-black/70 flex items-center justify-center p-4 z-[70]">
            <div className="bg-white rounded-xl shadow-xl w-full max-w-5xl h-[90vh] flex flex-col overflow-hidden">
@@ -520,7 +538,7 @@ export default function IRBDashboard() {
                   <ul className="space-y-3">
                     {selectedProject.reviews.map((r, i) => (
                       <li key={i} className="bg-white p-3 rounded shadow-sm text-sm border-l-4 border-blue-500">
-                        <div className="font-bold">{r.reviewer_name}</div>
+                        <div className="font-bold">{r.reviewer_name || `กรรมการ ID: ${r.reviewer_id}`}</div>
                         <div className="text-xs font-bold text-blue-600 uppercase mt-1">{r.decision}</div>
                         <p className="mt-1 text-slate-700">{r.comments || "ไม่ได้ระบุเหตุผล"}</p>
                       </li>
@@ -547,23 +565,6 @@ export default function IRBDashboard() {
                 </div>
               </form>
             </div>
-          </div>
-        </div>
-      )}
-
-      {/* Modal อัปโหลดใบรับรองที่เซนต์แล้ว */}
-      {showUploadCertModal && selectedProject && (
-        <div className="fixed inset-0 bg-black/60 flex items-center justify-center p-4 z-[60]">
-          <div className="bg-white p-6 rounded-xl shadow-xl max-w-md w-full">
-            <h3 className="text-lg font-bold mb-2">อัปโหลดใบรับรองที่เซนต์แล้ว</h3>
-            <p className="text-sm text-slate-600 mb-4">โครงการ: {selectedProject.title}</p>
-            <form onSubmit={handleUploadSignedCert}>
-              <input type="file" accept=".pdf" onChange={e => setCertFile(e.target.files[0])} className="w-full mb-4" required />
-              <div className="flex justify-end space-x-2">
-                <button type="button" onClick={() => setShowUploadCertModal(false)} className="px-4 py-2 border rounded-lg hover:bg-slate-50">ยกเลิก</button>
-                <button type="submit" className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">อัปโหลด</button>
-              </div>
-            </form>
           </div>
         </div>
       )}
@@ -673,23 +674,6 @@ export default function IRBDashboard() {
                 </form>
               </>
             )}
-          </div>
-        </div>
-      )}
-
-      {/* Modal แสดง PDF */}
-      {pdfUrl && (
-        <div className="fixed inset-0 bg-black/70 flex items-center justify-center p-4 z-[70]">
-           <div className="bg-white rounded-xl shadow-xl w-full max-w-5xl h-[90vh] flex flex-col overflow-hidden">
-            <div className="flex justify-between items-center p-4 border-b bg-slate-50">
-              <h3 className="text-lg font-bold">เอกสาร PDF</h3>
-              <button onClick={() => setPdfUrl(null)} className="text-red-500 text-xl font-bold">✕</button>
-            </div>
-            <div className="flex-1 bg-slate-200">
-              <object data={pdfUrl} type="application/pdf" width="100%" height="100%">
-                <p className="text-center mt-10">เบราว์เซอร์ไม่รองรับการแสดง PDF <a href={pdfUrl} download className="text-blue-600 underline">คลิกเพื่อดาวน์โหลด</a></p>
-              </object>
-            </div>
           </div>
         </div>
       )}

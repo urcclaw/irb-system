@@ -143,6 +143,7 @@ rm -rf .git
 git init
 ```
 
+docker compose logs backend --tail=50
 docker compose logs -f backend
 docker compose up -d --build 
 
