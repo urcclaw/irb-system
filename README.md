@@ -1,48 +1,65 @@
-# 🏥 ระบบบริหารจัดการงานวิจัย (Institutional Review Board - IRB System)
+# 🏥 ระบบบริหารจัดการงานวิจัยและจริยธรรมการวิจัย (IRB & Meeting Management System)
 
-ระบบ Full-Stack สำหรับจัดการโครงการวิจัยและขออนุมัติจริยธรรมการวิจัยในคน (IRB) ออกแบบมาเพื่อใช้ในโรงพยาบาลหรือสถาบันการศึกษา โดยเน้นความปลอดภัยของข้อมูลสุขภาพ (PDPA) การแยกสิทธิ์การเข้าถึง (Role-based Access Control) และการบันทึกประวัติการทำงาน (Audit Log)
+ระบบ Full-Stack สำหรับจัดการโครงการวิจัย ขออนุมัติจริยธรรมการวิจัยในคน (IRB) และ **ระบบจัดการประชุมคณะกรรมการ** ออกแบบมาเพื่อใช้ในโรงพยาบาลหรือสถาบันการศึกษา โดยเน้นความปลอดภัยของข้อมูล (PDPA) การแยกสิทธิ์การเข้าถึง (Role-based Access Control) และการบันทึกประวัติการทำงาน (Audit Log)
 
 ## 🚀 Tech Stack
-
-- **Frontend:** React (Vite) + Tailwind CSS + Axios
-- **Backend:** FastAPI (Python 3.12) + SQLAlchemy + Pydantic
-- **Database:** PostgreSQL 16
-- **Authentication:** JWT (JSON Web Tokens) + Bcrypt (Direct hashing)
-- **Infrastructure:** Docker & Docker Compose, Nginx (Reverse Proxy)
+- **Frontend**: React (Vite) + Tailwind CSS + Axios + React Router
+- **Backend**: FastAPI (Python 3.12) + SQLAlchemy + Pydantic
+- **Database**: PostgreSQL 16
+- **Authentication**: JWT (JSON Web Tokens) + Bcrypt
+- **Infrastructure**: Docker & Docker Compose, Nginx (Reverse Proxy)
 
 ## ✨ ฟีเจอร์หลัก (Features)
+### 🔐 ระบบยืนยันตัวตนและสิทธิ์ (Authentication & Authorization)
+- ลงทะเบียนและเข้าสู่ระบบด้วย JWT
+- **ระบบแยกสิทธิ์ 5 ระดับ (Role-based Access Control)**:
+  - `admin`: ผู้ดูแลระบบ (จัดการทุกอย่าง, จัดการสถานที่ประชุม)
+  - `irb_officer`: เจ้าหน้าที่ IRB (ตรวจสอบ, อนุมัติโครงการ, จัดการนัดประชุม, เช็กชื่อกรรมการ)
+  - `committee`: กรรมการจริยธรรม (เข้าร่วมประชุม, ลงมติพิจารณาโครงการ)
+  - `pi`: ผู้วิจัยหลัก (สร้างโครงการ, อัปโหลดเอกสาร)
+  - `assistant`: ผู้ช่วยนักวิจัย (ดูโครงการ, อัปโหลดเอกสาร)
+- ระบบป้องกันผลประโยชน์ทับซ้อน (Prevent Self-Approval)
 
-1. **ระบบยืนยันตัวตน (Authentication):** ลงทะเบียนและเข้าสู่ระบบด้วย JWT
-2. **ระบบแยกสิทธิ์ 4 ระดับ (Role-based Access Control):**
-   - `admin`: ผู้ดูแลระบบ (จัดการทุกอย่าง)
-   - `irb_officer`: เจ้าหน้าที่ IRB (ตรวจสอบและอนุมัติโครงการ)
-   - `pi`: ผู้วิจัยหลัก (สร้างโครงการ, อัปโหลดเอกสาร)
-   - `assistant`: ผู้ช่วยนักวิจัย (ดูโครงการ, อัปโหลดเอกสาร)
-3. **ระบบจัดการโครงการวิจัย (Project Management):** สร้าง, ดูรายการ, ติดตามสถานะ
-4. **ระบบอัปโหลดเอกสาร (Document Upload):** แนบไฟล์ PDF เอกสารอนุมัติจาก IRB
-5. **ระบบอนุมัติโครงการ (Approval Workflow):** เจ้าหน้าที่ IRB กดอนุมัติโครงการได้
-6. **ระบบป้องกันผลประโยชน์ทับซ้อน (Prevent Self-Approval):** บล็อกไม่ให้เจ้าหน้าที่อนุมัติโครงการของตัวเอง
-7. **ระบบบันทึกประวัติ (Audit Log):** บันทึกการทำงานสำคัญลงฐานข้อมูลเพื่อการตรวจสอบย้อนหลัง
+### 📁 ระบบจัดการโครงการวิจัย (Project Management)
+- สร้าง, ดูรายการ, ติดตามสถานะโครงการ
+- ระบบอัปโหลดเอกสาร 10 ประเภท (PDF)
+- ระบบอนุมัติโครงการและออกใบรับรอง (Approval Workflow)
+
+### 📅 ระบบจัดการประชุมคณะกรรมการ (Meeting Management System) **[ใหม่]**
+- **จัดการสถานที่**: Admin สามารถเพิ่ม/แก้ไข/ลบห้องประชุมและความจุได้
+- **สร้างนัดประชุม**: แยกฟิลด์วันที่, เวลาเริ่ม, เวลาสิ้นสุด และเลือกสถานที่จาก Dropdown
+- **เช็กชื่อและ Quorum**: ระบบสร้างรายชื่อกรรมการอัตโนมัติ คำนวณองค์ประชุม (Quorum) แบบ Real-time
+- **บันทึกมติ**: ลงมติ (อนุมัติ/อนุมัติมีเงื่อนไข/แก้ไข/ไม่อนุมัติ/เลื่อน) พร้อมเหตุผล และอัปเดตสถานะโครงการทันที
+- **ประวัติย้อนหลัง**: ตารางสรุปมติที่ประชุมพร้อมระบบกรอง (Filter) ตามวันที่และประเภทมติ
+
+### 📊 ระบบบันทึกประวัติ (Audit Log)
+- บันทึกการทำงานสำคัญลงฐานข้อมูลเพื่อการตรวจสอบย้อนหลัง
 
 ## 📂 โครงสร้างโปรเจกต์ (Project Structure)
-
 ```text
 .
-├── app/                    # FastAPI Backend
-│   ├── main.py             # จุดเริ่มต้นแอปพลิเคชัน + CORS
-│   ├── models.py           # โครงสร้างฐานข้อมูล (User, Project, AuditLog)
-│   ├── database.py         # การเชื่อมต่อ Database
-│   └── routers/            # API Endpoints (auth, projects, admin)
-├── frontend/               # React Frontend
+├── backend/                    # FastAPI Backend (ย้ายจาก app/)
+│   ├── main.py                 # จุดเริ่มต้นแอปพลิเคชัน + CORS + Router Registration
+│   ├── models.py               # โครงสร้างฐานข้อมูล (User, Project, Meeting, Location, etc.)
+│   ├── database.py             # การเชื่อมต่อ Database
+│   ├── schemas/                # Pydantic Schemas (meeting.py, assessment.py)
+│   └── routers/                # API Endpoints 
+│       ├── auth.py             # ล็อกอิน/ลงทะเบียน
+│       ├── projects.py         # จัดการโครงการ
+│       ├── admin.py            # จัดการระบบ
+│       ├── assessments.py      # แบบประเมิน
+│       ├── meetings.py         # [ใหม่] ระบบจัดการประชุม
+│       └── locations.py        # [ใหม่] จัดการสถานที่ประชุม
+├── frontend/                   # React Frontend
 │   ├── src/
-│   │   ├── api.js          # ตั้งค่า Axios
-│   │   ├── store/          # จัดการ State (AuthContext)
-│   │   ├── components/     # UI Components (Navbar)
-│   │   └── pages/          # หน้าจอต่างๆ (auth, projects, irb)
-│   └── nginx.conf          # ตั้งค่า Proxy ไปยัง Backend
-├── uploads/                # โฟลเดอร์เก็บไฟล์ PDF (ผูกกับ Docker Volume)
-├── backup.sql              # ไฟล์ SQL สำหรับสร้างตารางและข้อมูลตัวอย่าง
-├── docker-compose.yml      # ไฟล์ตั้งค่า Container ทั้งหมด
+│   │   ├── api.js              # ตั้งค่า Axios Instance
+│   │   ├── store/              # จัดการ State (AuthContext)
+│   │   ├── components/         # UI Components (Navbar, meetings/*)
+│   │   └── pages/              # หน้าจอต่างๆ (auth, projects, irb, meetings, admin)
+│   └── nginx.conf              # ตั้งค่า Proxy ไปยัง Backend
+├── uploads/                    # โฟลเดอร์เก็บไฟล์ PDF (ผูกกับ Docker Volume)
+├── backup.sql                  # ไฟล์ SQL สำหรับสร้างตารางและข้อมูลตัวอย่าง
+├── docker-compose.yml          # ไฟล์ตั้งค่า Container ทั้งหมด
 └── README.md
 ```
 
