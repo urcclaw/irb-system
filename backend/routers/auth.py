@@ -5,8 +5,11 @@ from pydantic import BaseModel
 from sqlalchemy.orm import Session
 from starlette import status
 from sqlalchemy.exc import IntegrityError
-from ..database import SessionLocal
-from ..models import User
+
+# ✅ แก้ไข: ลบจุด (..) ออก ให้เป็น Absolute Import จาก root (/app)
+from database import SessionLocal
+from models import User
+
 from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
 from jose import jwt, JWTError
 import bcrypt
@@ -37,8 +40,10 @@ class CreateUserRequest(BaseModel):
 
 def get_db():
     db = SessionLocal()
-    try: yield db
-    finally: db.close()
+    try: 
+        yield db
+    finally: 
+        db.close()
 
 db_dependency = Annotated[Session, Depends(get_db)]
 
@@ -56,9 +61,11 @@ async def get_current_user(token: Annotated[str, Depends(oauth2_bearer)], db: db
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         user_id: int = payload.get("id")
-        if user_id is None: raise HTTPException(status_code=401, detail="Invalid token")
+        if user_id is None: 
+            raise HTTPException(status_code=401, detail="Invalid token")
         user = db.query(User).filter(User.id == user_id).first()
-        if user is None: raise HTTPException(status_code=404, detail="User not found")
+        if user is None: 
+            raise HTTPException(status_code=404, detail="User not found")
         return user
     except JWTError:
         raise HTTPException(status_code=401, detail="Could not validate user")
@@ -72,7 +79,7 @@ async def create_user(db: db_dependency, create_user_request: CreateUserRequest)
     if db.query(User).filter(User.email == create_user_request.email).first():
         raise HTTPException(status_code=400, detail="Email already taken.")
 
-    user_role = create_user_request.role if create_user_request.role in ["pi", "assistant"] else "pi"
+    user_role = create_user_request.role if create_user_request.role in ["pi", "assistant", "admin", "irb_officer", "committee"] else "pi"
 
     user = User(
         email=create_user_request.email, username=create_user_request.username,
@@ -81,7 +88,9 @@ async def create_user(db: db_dependency, create_user_request: CreateUserRequest)
         hashed_password=get_password_hash(create_user_request.password), is_active=True,
     )
     try:
-        db.add(user); db.commit(); db.refresh(user)
+        db.add(user)
+        db.commit()
+        db.refresh(user)
     except IntegrityError:
         db.rollback()
         raise HTTPException(status_code=400, detail="User already exists.")

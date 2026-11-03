@@ -5,10 +5,10 @@ from pydantic import BaseModel
 from typing import Optional
 from fastapi.responses import StreamingResponse
 
-from app.database import get_db
-from app.models import Project, User, DocumentTemplate
-from app.routers.auth import get_current_user
-from app.utils.certificate_generator import generate_certificate_pdf
+from database import get_db
+from models import Project, User, DocumentTemplate
+from routers.auth import get_current_user
+from utils.certificate_generator import generate_certificate_pdf
 
 router = APIRouter(prefix="/admin", tags=["admin"])
 

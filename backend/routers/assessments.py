@@ -1,9 +1,9 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
-from app.database import get_db
-from app.models import CommitteeReview, User, Project
-from app.schemas.assessment import AssessmentCreate, AssessmentResponse
-from app.routers.auth import get_current_user
+from database import get_db
+from models import CommitteeReview, User, Project
+from schemas.assessment import AssessmentCreate, AssessmentResponse
+from routers.auth import get_current_user
 
 router = APIRouter(prefix="/assessments", tags=["Assessments"])
 

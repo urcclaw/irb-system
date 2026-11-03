@@ -6,9 +6,9 @@ from datetime import datetime
 from pydantic import BaseModel
 import os
 import shutil
-from ..models import Project, User, AuditLog
-from .auth import get_current_user
-from ..database import SessionLocal
+from models import Project, User, AuditLog
+from routers.auth import get_current_user
+from database import SessionLocal
 
 router = APIRouter(prefix="/projects", tags=["projects"])
 

@@ -2,7 +2,9 @@ from sqlalchemy import Column, Integer, String, Boolean, DateTime, ForeignKey, T
 from sqlalchemy.orm import relationship
 from sqlalchemy.dialects.postgresql import JSONB
 from datetime import datetime
-from .database import Base
+
+# ✅ แก้ไข: ลบจุด (.) ออก เพื่อให้ Python หาไฟล์เจอเมื่อรันจาก root (/app)
+from database import Base
 
 
 class User(Base):
@@ -13,7 +15,7 @@ class User(Base):
     first_name = Column(String, nullable=False)
     last_name = Column(String, nullable=False)
     phone_number = Column(String)
-    role = Column(String, default="pi")
+    role = Column(String, default="pi")  # admin, irb_officer, committee, pi, assistant
     hashed_password = Column(String, nullable=False)
     is_active = Column(Boolean, default=True)
     totp_secret = Column(String, nullable=True)
@@ -26,6 +28,9 @@ class User(Base):
     projects = relationship("Project", back_populates="owner")
     audit_logs = relationship("AuditLog", back_populates="user")
     reviews = relationship("CommitteeReview", back_populates="reviewer")
+    
+    # ✅ เพิ่ม Relationship สำหรับระบบประชุม
+    meeting_attendances = relationship("MeetingAttendance", back_populates="user")
 
 
 class Project(Base):
@@ -73,6 +78,9 @@ class Project(Base):
     # Relationships
     owner = relationship("User", back_populates="projects")
     reviews = relationship("CommitteeReview", back_populates="project")
+    
+    # ✅ เพิ่ม Relationship สำหรับระบบประชุม
+    meeting_agendas = relationship("MeetingAgenda", back_populates="project")
 
 
 class CommitteeReview(Base):
@@ -124,3 +132,60 @@ class SystemSetting(Base):
     id = Column(Integer, primary_key=True, index=True)
     key = Column(String, unique=True, nullable=False)
     value = Column(Text, nullable=False)
+
+
+# ==========================================
+# ✅ IRB Meeting System Models (มีเพียง 1 ชุด)
+# ==========================================
+
+class CommitteeMeeting(Base):
+    __tablename__ = "committee_meetings"
+    id = Column(Integer, primary_key=True, index=True)
+    meeting_date = Column(DateTime, nullable=False, index=True)
+    end_time = Column(DateTime, nullable=True)  # ✅ เวลาสิ้นสุด
+    meeting_type = Column(String, default="Full Board")  # Full Board, Expedited
+    location = Column(String, nullable=True)
+    status = Column(String, default="scheduled")  # scheduled, ongoing, completed, cancelled
+    quorum_required = Column(Integer, default=1)  # จำนวนขั้นต่ำตามกฎหมาย/ระเบียบ
+    minutes_file_path = Column(String, nullable=True)  # Path ไฟล์ PDF รายงานการประชุม
+    created_at = Column(DateTime, default=datetime.utcnow)
+    
+    agendas = relationship("MeetingAgenda", back_populates="meeting", cascade="all, delete-orphan")
+    attendances = relationship("MeetingAttendance", back_populates="meeting", cascade="all, delete-orphan")
+
+
+class MeetingAgenda(Base):
+    __tablename__ = "meeting_agendas"
+    id = Column(Integer, primary_key=True, index=True)
+    meeting_id = Column(Integer, ForeignKey("committee_meetings.id"), nullable=False)
+    project_id = Column(Integer, ForeignKey("projects.id"), nullable=False)
+    agenda_order = Column(Integer, nullable=False)  # ลำดับวาระ
+    agenda_type = Column(String, default="new")  # new, continuation, amendment, acknowledgement
+    decision = Column(String, nullable=True)  # approved, approved_with_conditions, revise, rejected, deferred
+    decision_reason = Column(Text, nullable=True)
+    decision_date = Column(DateTime, nullable=True)
+    
+    meeting = relationship("CommitteeMeeting", back_populates="agendas")
+    project = relationship("Project", back_populates="meeting_agendas")
+
+
+class MeetingAttendance(Base):
+    __tablename__ = "meeting_attendances"
+    id = Column(Integer, primary_key=True, index=True)
+    meeting_id = Column(Integer, ForeignKey("committee_meetings.id"), nullable=False)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    status = Column(String, default="absent")  # present, absent, leave
+    is_chairperson = Column(Boolean, default=False)  # ระบุประธานที่ประชุม
+    
+    meeting = relationship("CommitteeMeeting", back_populates="attendances")
+    user = relationship("User", back_populates="meeting_attendances")
+
+
+class MeetingLocation(Base):
+    __tablename__ = "meeting_locations"
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String, nullable=False, unique=True)  # ชื่อห้อง/สถานที่
+    capacity = Column(Integer, nullable=True)  # ความจุ (คน)
+    description = Column(Text, nullable=True)  # รายละเอียดเพิ่มเติม
+    is_active = Column(Boolean, default=True)  # เปิดใช้งานหรือไม่
+    created_at = Column(DateTime, default=datetime.utcnow)
