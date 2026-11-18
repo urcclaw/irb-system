@@ -35,14 +35,13 @@ function ReviewAssignmentsPage() {
     )
   }
 
-  // ✅ เข้าถึง data ซ้อน 2 ชั้น เพราะ @hey-api/openapi-ts ห่อ response ด้วย Axios
+  // เข้าถึง data ซ้อน 2 ชั้น เพราะ @hey-api/openapi-ts ห่อ response ด้วย Axios
   const responseBody = data?.data
   const assignments = Array.isArray(responseBody?.data) ? responseBody.data : []
   const count = responseBody?.count ?? 0
 
   return (
     <div className="p-6">
-      {/* 👇 Header ที่เพิ่มปุ่ม CreateAssignmentDialog เข้ามาแล้ว */}
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">Review Assignments (งานตรวจสอบ)</h1>
         <div className="flex items-center gap-3">
@@ -56,8 +55,8 @@ function ReviewAssignmentsPage() {
           <thead className="bg-muted">
             <tr>
               <th className="px-4 py-3 font-medium">ID การมอบหมาย</th>
-              <th className="px-4 py-3 font-medium">Protocol ID</th>
-              <th className="px-4 py-3 font-medium">Reviewer ID</th>
+              <th className="px-4 py-3 font-medium">โครงการวิจัย</th>
+              <th className="px-4 py-3 font-medium">ผู้ตรวจสอบ</th>
               <th className="px-4 py-3 font-medium">สถานะ</th>
               <th className="px-4 py-3 font-medium">กำหนดส่ง</th>
             </tr>
@@ -68,11 +67,31 @@ function ReviewAssignmentsPage() {
                 <td className="px-4 py-3 font-mono text-xs text-muted-foreground">
                   {assignment.id ? `${assignment.id.slice(0, 8)}...` : 'N/A'}
                 </td>
-                <td className="px-4 py-3 font-mono text-xs text-muted-foreground">
-                  {assignment.protocol_id ? `${assignment.protocol_id.slice(0, 8)}...` : 'N/A'}
+                <td className="px-4 py-3">
+                  {/* แสดงชื่อ Protocol ถ้ามี */}
+                  {assignment.protocol_title ? (
+                    <span className="font-medium text-foreground" title={assignment.protocol_title}>
+                      {assignment.protocol_title.length > 40
+                        ? `${assignment.protocol_title.slice(0, 40)}...`
+                        : assignment.protocol_title}
+                    </span>
+                  ) : (
+                    <span className="font-mono text-xs text-muted-foreground">
+                      {assignment.protocol_id ? `${assignment.protocol_id.slice(0, 8)}...` : 'N/A'}
+                    </span>
+                  )}
                 </td>
-                <td className="px-4 py-3 font-mono text-xs text-muted-foreground">
-                  {assignment.reviewer_id ? `${assignment.reviewer_id.slice(0, 8)}...` : 'N/A'}
+                <td className="px-4 py-3">
+                  {/* แสดงชื่อ Reviewer ถ้ามี */}
+                  {assignment.reviewer_name ? (
+                    <span className="font-medium text-foreground">
+                      {assignment.reviewer_name}
+                    </span>
+                  ) : (
+                    <span className="font-mono text-xs text-muted-foreground">
+                      {assignment.reviewer_id ? `${assignment.reviewer_id.slice(0, 8)}...` : 'N/A'}
+                    </span>
+                  )}
                 </td>
                 <td className="px-4 py-3">
                   <span className={`inline-flex px-2 py-1 rounded-full text-xs font-medium ${
