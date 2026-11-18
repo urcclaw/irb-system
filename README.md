@@ -1,4 +1,4 @@
-IRB Management System (ระบบคณะกรรมการจริยธรรมการวิจัยในคน)
+# IRB Management System (ระบบคณะกรรมการจริยธรรมการวิจัยในคน)
 
 ระบบสารสนเทศเพื่อการบริหารจัดการกระบวนการพิจารณาจริยธรรมการวิจัยในคน (Institutional Review Board - IRB) พัฒนาบนพื้นฐานของ Full Stack FastAPI Template (FastAPI + React + PostgreSQL)
 
