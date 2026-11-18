@@ -2,7 +2,7 @@
 
 import { type Client, type Options as Options2, type TDataShape, urlSearchParamsBodySerializer } from './client';
 import { client } from './client.gen';
-import type { itemsCreateItemData, itemsCreateItemErrors, itemsCreateItemResponses, itemsDeleteItemData, itemsDeleteItemErrors, itemsDeleteItemResponses, itemsReadItemData, itemsReadItemErrors, itemsReadItemResponses, itemsReadItemsData, itemsReadItemsErrors, itemsReadItemsResponses, itemsUpdateItemData, itemsUpdateItemErrors, itemsUpdateItemResponses, loginLoginAccessTokenData, loginLoginAccessTokenErrors, loginLoginAccessTokenResponses, loginRecoverPasswordData, loginRecoverPasswordErrors, loginRecoverPasswordHtmlContentData, loginRecoverPasswordHtmlContentErrors, loginRecoverPasswordHtmlContentResponses, loginRecoverPasswordResponses, loginResetPasswordData, loginResetPasswordErrors, loginResetPasswordResponses, loginTestTokenData, loginTestTokenResponses, privateCreateUserData, privateCreateUserErrors, privateCreateUserResponses, usersCreateUserData, usersCreateUserErrors, usersCreateUserResponses, usersDeleteUserData, usersDeleteUserErrors, usersDeleteUserMeData, usersDeleteUserMeResponses, usersDeleteUserResponses, usersReadUserByIdData, usersReadUserByIdErrors, usersReadUserByIdResponses, usersReadUserMeData, usersReadUserMeResponses, usersReadUsersData, usersReadUsersErrors, usersReadUsersResponses, usersRegisterUserData, usersRegisterUserErrors, usersRegisterUserResponses, usersUpdatePasswordMeData, usersUpdatePasswordMeErrors, usersUpdatePasswordMeResponses, usersUpdateUserData, usersUpdateUserErrors, usersUpdateUserMeData, usersUpdateUserMeErrors, usersUpdateUserMeResponses, usersUpdateUserResponses, utilsHealthCheckData, utilsHealthCheckResponses, utilsTestEmailData, utilsTestEmailErrors, utilsTestEmailResponses } from './types.gen';
+import type { itemsCreateItemData, itemsCreateItemErrors, itemsCreateItemResponses, itemsDeleteItemData, itemsDeleteItemErrors, itemsDeleteItemResponses, itemsReadItemData, itemsReadItemErrors, itemsReadItemResponses, itemsReadItemsData, itemsReadItemsErrors, itemsReadItemsResponses, itemsUpdateItemData, itemsUpdateItemErrors, itemsUpdateItemResponses, loginLoginAccessTokenData, loginLoginAccessTokenErrors, loginLoginAccessTokenResponses, loginRecoverPasswordData, loginRecoverPasswordErrors, loginRecoverPasswordHtmlContentData, loginRecoverPasswordHtmlContentErrors, loginRecoverPasswordHtmlContentResponses, loginRecoverPasswordResponses, loginResetPasswordData, loginResetPasswordErrors, loginResetPasswordResponses, loginTestTokenData, loginTestTokenResponses, privateCreateUserData, privateCreateUserErrors, privateCreateUserResponses, protocolsCreateProtocolData, protocolsCreateProtocolErrors, protocolsCreateProtocolResponses, protocolsDeleteProtocolData, protocolsDeleteProtocolErrors, protocolsDeleteProtocolResponses, protocolsReadProtocolData, protocolsReadProtocolErrors, protocolsReadProtocolResponses, protocolsReadProtocolsData, protocolsReadProtocolsErrors, protocolsReadProtocolsResponses, protocolsUpdateProtocolData, protocolsUpdateProtocolErrors, protocolsUpdateProtocolResponses, reviewAssignmentsCreateReviewAssignmentData, reviewAssignmentsCreateReviewAssignmentErrors, reviewAssignmentsCreateReviewAssignmentResponses, reviewAssignmentsReadReviewAssignmentData, reviewAssignmentsReadReviewAssignmentErrors, reviewAssignmentsReadReviewAssignmentResponses, reviewAssignmentsReadReviewAssignmentsData, reviewAssignmentsReadReviewAssignmentsErrors, reviewAssignmentsReadReviewAssignmentsResponses, usersCreateUserData, usersCreateUserErrors, usersCreateUserResponses, usersDeleteUserData, usersDeleteUserErrors, usersDeleteUserMeData, usersDeleteUserMeResponses, usersDeleteUserResponses, usersReadUserByIdData, usersReadUserByIdErrors, usersReadUserByIdResponses, usersReadUserMeData, usersReadUserMeResponses, usersReadUsersData, usersReadUsersErrors, usersReadUsersResponses, usersRegisterUserData, usersRegisterUserErrors, usersRegisterUserResponses, usersUpdatePasswordMeData, usersUpdatePasswordMeErrors, usersUpdatePasswordMeResponses, usersUpdateUserData, usersUpdateUserErrors, usersUpdateUserMeData, usersUpdateUserMeErrors, usersUpdateUserMeResponses, usersUpdateUserResponses, utilsHealthCheckData, utilsHealthCheckResponses, utilsTestEmailData, utilsTestEmailErrors, utilsTestEmailResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean, TResponse = unknown> = Options2<TData, ThrowOnError, TResponse> & {
     /**
@@ -360,6 +360,138 @@ export class ItemsService {
                 'Content-Type': 'application/json',
                 ...options.headers
             }
+        });
+    }
+}
+
+export class ProtocolsService {
+    /**
+     * Read Protocols
+     *
+     * Retrieve protocols.
+     * Researchers see only their own. Secretary/Admin see all.
+     */
+    public static readProtocols<ThrowOnError extends boolean = true>(options?: Options<protocolsReadProtocolsData, ThrowOnError>) {
+        return (options?.client ?? client).get<protocolsReadProtocolsResponses, protocolsReadProtocolsErrors, ThrowOnError>({
+            responseType: 'json',
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/api/v1/protocols/',
+            ...options
+        });
+    }
+    
+    /**
+     * Create Protocol
+     *
+     * Create new protocol (Researcher only).
+     */
+    public static createProtocol<ThrowOnError extends boolean = true>(options: Options<protocolsCreateProtocolData, ThrowOnError>) {
+        return (options.client ?? client).post<protocolsCreateProtocolResponses, protocolsCreateProtocolErrors, ThrowOnError>({
+            responseType: 'json',
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/api/v1/protocols/',
+            ...options,
+            headers: {
+                'Content-Type': 'application/json',
+                ...options.headers
+            }
+        });
+    }
+    
+    /**
+     * Delete Protocol
+     *
+     * Delete protocol (Draft only).
+     */
+    public static deleteProtocol<ThrowOnError extends boolean = true>(options: Options<protocolsDeleteProtocolData, ThrowOnError>) {
+        return (options.client ?? client).delete<protocolsDeleteProtocolResponses, protocolsDeleteProtocolErrors, ThrowOnError>({
+            responseType: 'json',
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/api/v1/protocols/{id}',
+            ...options
+        });
+    }
+    
+    /**
+     * Read Protocol
+     *
+     * Get protocol by ID.
+     */
+    public static readProtocol<ThrowOnError extends boolean = true>(options: Options<protocolsReadProtocolData, ThrowOnError>) {
+        return (options.client ?? client).get<protocolsReadProtocolResponses, protocolsReadProtocolErrors, ThrowOnError>({
+            responseType: 'json',
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/api/v1/protocols/{id}',
+            ...options
+        });
+    }
+    
+    /**
+     * Update Protocol
+     *
+     * Update protocol.
+     */
+    public static updateProtocol<ThrowOnError extends boolean = true>(options: Options<protocolsUpdateProtocolData, ThrowOnError>) {
+        return (options.client ?? client).patch<protocolsUpdateProtocolResponses, protocolsUpdateProtocolErrors, ThrowOnError>({
+            responseType: 'json',
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/api/v1/protocols/{id}',
+            ...options,
+            headers: {
+                'Content-Type': 'application/json',
+                ...options.headers
+            }
+        });
+    }
+}
+
+export class ReviewAssignmentsService {
+    /**
+     * Read Review Assignments
+     *
+     * Retrieve review assignments.
+     * - Secretary/Admin see all.
+     * - Reviewer sees only their own.
+     * - Researcher has no access.
+     */
+    public static assignmentsReadReviewAssignments<ThrowOnError extends boolean = true>(options?: Options<reviewAssignmentsReadReviewAssignmentsData, ThrowOnError>) {
+        return (options?.client ?? client).get<reviewAssignmentsReadReviewAssignmentsResponses, reviewAssignmentsReadReviewAssignmentsErrors, ThrowOnError>({
+            responseType: 'json',
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/api/v1/review-assignments/',
+            ...options
+        });
+    }
+    
+    /**
+     * Create Review Assignment
+     *
+     * Create a new review assignment (Secretary only).
+     */
+    public static assignmentsCreateReviewAssignment<ThrowOnError extends boolean = true>(options: Options<reviewAssignmentsCreateReviewAssignmentData, ThrowOnError>) {
+        return (options.client ?? client).post<reviewAssignmentsCreateReviewAssignmentResponses, reviewAssignmentsCreateReviewAssignmentErrors, ThrowOnError>({
+            responseType: 'json',
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/api/v1/review-assignments/',
+            ...options,
+            headers: {
+                'Content-Type': 'application/json',
+                ...options.headers
+            }
+        });
+    }
+    
+    /**
+     * Read Review Assignment
+     *
+     * Get review assignment by ID.
+     */
+    public static assignmentsReadReviewAssignment<ThrowOnError extends boolean = true>(options: Options<reviewAssignmentsReadReviewAssignmentData, ThrowOnError>) {
+        return (options.client ?? client).get<reviewAssignmentsReadReviewAssignmentResponses, reviewAssignmentsReadReviewAssignmentErrors, ThrowOnError>({
+            responseType: 'json',
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/api/v1/review-assignments/{id}',
+            ...options
         });
     }
 }
