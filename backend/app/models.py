@@ -270,6 +270,8 @@ class ReviewAssignmentPublic(SQLModel):
     due_date: datetime | None = None
     status: AssignmentStatus
     assigned_at: datetime
+    protocol_title: str | None = None
+    reviewer_name: str | None = None
 
 class ReviewAssignmentsPublic(SQLModel):
     data: list[ReviewAssignmentPublic]
