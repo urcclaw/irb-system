@@ -11,6 +11,7 @@ from app.models import (
 
 router = APIRouter(prefix="/protocols", tags=["protocols"])
 
+
 @router.get("/", response_model=ProtocolsPublic)
 def read_protocols(
     session: SessionDep, current_user: CurrentUser, skip: int = 0, limit: int = 100
@@ -20,15 +21,13 @@ def read_protocols(
     Researchers see only their own. Secretary/Admin see all.
     """
     if current_user.role == UserRole.RESEARCHER:
-        count = session.exec(
-            select(Protocol).where(Protocol.pi_id == current_user.id)
-        ).count()
         protocols = session.exec(
             select(Protocol).where(Protocol.pi_id == current_user.id).offset(skip).limit(limit)
         ).all()
+        count = len(protocols)
     else:
-        count = session.exec(select(Protocol)).count()
         protocols = session.exec(select(Protocol).offset(skip).limit(limit)).all()
+        count = len(protocols)
     
     return ProtocolsPublic(data=protocols, count=count)
 
@@ -61,6 +60,7 @@ def read_protocol(
     if not protocol:
         raise HTTPException(status_code=404, detail="Protocol not found")
     
+    # ตรวจสอบสิทธิ์: Researcher เห็นเฉพาะของตัวเอง
     if current_user.role == UserRole.RESEARCHER and protocol.pi_id != current_user.id:
         raise HTTPException(status_code=403, detail="Not enough permissions")
     
@@ -78,6 +78,7 @@ def update_protocol(
     if not protocol:
         raise HTTPException(status_code=404, detail="Protocol not found")
     
+    # ตรวจสอบสิทธิ์
     if current_user.role == UserRole.RESEARCHER and protocol.pi_id != current_user.id:
         raise HTTPException(status_code=403, detail="Not enough permissions")
     if current_user.role not in [UserRole.RESEARCHER, UserRole.SECRETARY, UserRole.ADMIN]:

@@ -257,6 +257,23 @@ class ReviewAssignment(SQLModel, table=True):
     protocol: Protocol = Relationship(back_populates="review_assignments")
     comments: list[ReviewComment] = Relationship(back_populates="assignment", cascade_delete=True)
 
+class ReviewAssignmentCreate(SQLModel):
+    protocol_id: uuid.UUID
+    reviewer_id: uuid.UUID
+    due_date: datetime | None = None
+
+class ReviewAssignmentPublic(SQLModel):
+    id: uuid.UUID
+    protocol_id: uuid.UUID
+    reviewer_id: uuid.UUID
+    assigned_by_id: uuid.UUID
+    due_date: datetime | None = None
+    status: AssignmentStatus
+    assigned_at: datetime
+
+class ReviewAssignmentsPublic(SQLModel):
+    data: list[ReviewAssignmentPublic]
+    count: int
 
 class ReviewComment(SQLModel, table=True):
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
