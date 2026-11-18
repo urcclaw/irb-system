@@ -1,88 +1,67 @@
-# Full Stack FastAPI Template
+# =====================================================================
+# FILE: README.md
+# =====================================================================
+# IRB Management System (ระบบคณะกรรมการจริยธรรมการวิจัยในคน)
 
-[![Test Docker Compose](../../actions/workflows/test-docker-compose.yml/badge.svg)](../../actions/workflows/test-docker-compose.yml)
-[![Test Backend](../../actions/workflows/test-backend.yml/badge.svg)](../../actions/workflows/test-backend.yml)
+ระบบสารสนเทศเพื่อการบริหารจัดการกระบวนการพิจารณาจริยธรรมการวิจัยในคน (Institutional Review Board - IRB) พัฒนาบนพื้นฐานของ Full Stack FastAPI Template (FastAPI + React + PostgreSQL)
 
-## Technology Stack and Features
+## วัตถุประสงค์
+เพื่อเปลี่ยนกระบวนการทำงานแบบกระดาษ (Paper-based) ให้เป็นดิจิทัล (Paperless) และเพิ่มประสิทธิภาพในการบริหารจัดการเอกสาร การตรวจสอบ และการติดตามผลงานวิจัย โดยมี "เลขานุการ (Secretary)" เป็นศูนย์กลางในการขับเคลื่อนกระบวนการทำงาน (Workflow Manager)
 
-- ⚡ [**FastAPI**](https://fastapi.tiangolo.com) for the Python backend API.
-  - 🧰 [SQLModel](https://sqlmodel.tiangolo.com) for the Python SQL database interactions (ORM).
-  - 🔍 [Pydantic](https://docs.pydantic.dev), used by FastAPI, for the data validation and settings management.
-  - 💾 [PostgreSQL](https://www.postgresql.org) as the SQL database.
-- 🚀 [React](https://react.dev) for the frontend.
-  - 🧩 Built into the backend application and served by FastAPI on the same domain as the API.
-  - 💃 Using TypeScript, hooks, [Vite](https://vitejs.dev), and other parts of a modern frontend stack.
-  - 🎨 [Tailwind CSS](https://tailwindcss.com) and [shadcn/ui](https://ui.shadcn.com) for the frontend components.
-  - 🤖 An automatically generated frontend client.
-  - 🧪 [Playwright](https://playwright.dev) for end-to-end testing.
-  - 🦇 Dark mode support.
-- ☁️ [FastAPI Cloud](https://fastapicloud.com) for deployment.
-- 🐋 [Docker Compose](https://www.docker.com) for local services and self-hosted deployment.
-  - 📞 [Traefik](https://traefik.io) as a reverse proxy with automatic HTTPS.
-- 🔒 Secure password hashing by default.
-- 🔑 JWT (JSON Web Token) authentication.
-- 📫 Email-based password recovery.
-- ✉️ [React Email](https://react.email) for email templates.
-- 📬 [Mailpit](https://mailpit.axllent.org) for local email testing during development.
-- ✅ Tests with [Pytest](https://pytest.org).
-- 🏭 CI (continuous integration) and CD (continuous deployment) based on GitHub Actions.
+## Technology Stack
+- Backend: FastAPI, SQLModel, Pydantic
+- Database: PostgreSQL (พร้อมระบบ Row-Level Security - RLS)
+- Frontend: React, TypeScript, Vite, Tailwind CSS, shadcn/ui
+- Testing: Pytest, Playwright
+- Deployment: Docker Compose, Traefik
 
-### Dashboard Login
+## Project Structure
 
-![Dashboard login screenshot](img/login.png)
+    irb-system/
+    ├── backend/          # FastAPI Application
+    │   ├── app/
+    │   │   ├── api/      # API Endpoints
+    │   │   ├── core/     # Config, Security, Dependencies
+    │   │   ├── models.py # SQLModel Database Schema
+    │   │   └── main.py   # Entry Point
+    │   └── alembic/      # Database Migrations
+    ├── frontend/         # React Application
+    │   ├── src/
+    │   │   ├── components/
+    │   │   ├── routes/
+    │   │   └── main.tsx
+    │   └── package.json
+    ├── docs/             # Documentation
+    ├── compose.yml       # Docker Compose Config
+    ├── commands.md       # Cheat Sheet คำสั่งที่ใช้บ่อย
+    └── daily-progress.md # บันทึกความคืบหน้า
 
-### Dashboard - Admin
+## Getting Started
 
-![Admin dashboard screenshot](img/dashboard.png)
+### สิ่งที่ต้องมี (Prerequisites)
+- Docker & Docker Compose
+- Python 3.14+ (หรือใช้ผ่าน Docker)
+- Node.js / Bun (หรือใช้ผ่าน Docker)
 
-### Dashboard - Items
+### วิธีติดตั้ง (Installation)
+1. Clone Repository:
+    git clone https://github.com/urcclaw/irb-system.git
+2. คัดลอกไฟล์ Environment:
+    cp .env.example .env
+3. แก้ไขค่าตัวแปรใน .env ให้เหมาะสม
+4. รันระบบด้วย Docker Compose:
+    docker compose up -d
+5. เข้าใช้งาน Frontend ที่ http://localhost:5173
+6. เข้าใช้งาน API Docs ที่ http://localhost:8000/docs
 
-![Items dashboard screenshot](img/dashboard-items.png)
-
-### Dashboard - Dark Mode
-
-![Dark mode dashboard screenshot](img/dashboard-dark.png)
-
-### React Email Templates
-
-![Email templates screenshot](img/react-email.png)
-
-### Mailpit - Local Email Testing
-
-![Mailpit screenshot](img/mailpit.png)
-
-### Interactive API Documentation
-
-![API docs](img/docs.png)
-
-## How to Use It
-
-Click the **Use this template** button at the top of this page to create a new repository.
-
-## Backend Development
-
-Backend docs: [backend/README.md](./backend/README.md).
-
-## Frontend Development
-
-Frontend docs: [frontend/README.md](./frontend/README.md).
-
-## Deployment
-
-FastAPI Cloud deployment: [deployment.md](./deployment.md).
-
-Self-hosted deployment with Docker Compose: [deployment-docker-compose.md](./deployment-docker-compose.md).
-
-## Development
-
-General development docs: [development.md](./development.md).
-
-This includes the local FastAPI and Vite workflow, Docker Compose services, `.env` configuration, and more.
-
-## Release Notes
-
-Check the file [release-notes.md](./release-notes.md).
+## Documentation
+- Requirements Specification: requirements.md
+- Database Schema: docs/database-schema.md
+- API Specification: docs/api-spec.md
+- Workflow Diagram: docs/workflow-diagram.md
+- Commands Cheat Sheet: commands.md
+- Daily Progress Log: daily-progress.md
 
 ## License
+MIT License
 
-The Full Stack FastAPI Template is licensed under the terms of the MIT license.
