@@ -1,4 +1,4 @@
-import { Briefcase, Home, Users } from "lucide-react"
+import { Briefcase, Home, Users, FileText, ClipboardCheck } from "lucide-react"
 
 import { SidebarAppearance } from "@/components/Common/Appearance"
 import { Logo } from "@/components/Common/Logo"
@@ -12,17 +12,29 @@ import useAuth from "@/hooks/useAuth"
 import { type Item, Main } from "./Main"
 import { User } from "./User"
 
-const baseItems: Item[] = [
-  { icon: Home, title: "Dashboard", path: "/" },
-  { icon: Briefcase, title: "Items", path: "/items" },
-]
-
 export function AppSidebar() {
   const { user: currentUser } = useAuth()
 
+  // 1. เมนูพื้นฐานสำหรับทุกคน
+  const baseItems: Item[] = [
+    { icon: Home, title: "Dashboard", path: "/" },
+    { icon: FileText, title: "Protocols", path: "/protocols" }, // เปลี่ยนจาก Items เป็น Protocols
+  ]
+
+  // 2. เมนูเพิ่มเติมสำหรับเลขาฯ และ Reviewer
+  const reviewItems: Item[] = []
+  if (currentUser?.role === "SECRETARY" || currentUser?.role === "REVIEWER") {
+    reviewItems.push({ 
+      icon: ClipboardCheck, 
+      title: "Review Assignments", 
+      path: "/review-assignments" 
+    })
+  }
+
+  // 3. รวมเมนูทั้งหมด
   const items = currentUser?.is_superuser
-    ? [...baseItems, { icon: Users, title: "Admin", path: "/admin" }]
-    : baseItems
+    ? [...baseItems, ...reviewItems, { icon: Users, title: "Admin", path: "/admin" }]
+    : [...baseItems, ...reviewItems]
 
   return (
     <Sidebar collapsible="icon">

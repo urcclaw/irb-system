@@ -5,6 +5,11 @@ export type ClientOptions = {
 };
 
 /**
+ * AssignmentStatus
+ */
+export type AssignmentStatus = 'PENDING' | 'IN_PROGRESS' | 'COMPLETED';
+
+/**
  * Body_login-login_access_token
  */
 export type Body_login_login_access_token = {
@@ -159,6 +164,161 @@ export type PrivateUserCreate = {
 };
 
 /**
+ * ProtocolCreate
+ */
+export type ProtocolCreate = {
+    /**
+     * Title
+     */
+    title: string;
+    /**
+     * Abstract
+     */
+    abstract?: string | null;
+    status?: ProtocolStatus;
+    risk_level?: RiskLevel | null;
+    review_type?: ReviewType | null;
+};
+
+/**
+ * ProtocolPublic
+ */
+export type ProtocolPublic = {
+    /**
+     * Title
+     */
+    title: string;
+    /**
+     * Abstract
+     */
+    abstract?: string | null;
+    status?: ProtocolStatus;
+    risk_level?: RiskLevel | null;
+    review_type?: ReviewType | null;
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Pi Id
+     */
+    pi_id: string;
+    /**
+     * Created At
+     */
+    created_at?: string | null;
+};
+
+/**
+ * ProtocolStatus
+ */
+export type ProtocolStatus = 'DRAFT' | 'SUBMITTED' | 'SCREENING' | 'REVISION_REQUIRED' | 'PENDING_ASSIGNMENT' | 'UNDER_REVIEW' | 'AWAITING_DECISION' | 'APPROVED' | 'REJECTED' | 'ACTIVE' | 'CLOSED';
+
+/**
+ * ProtocolUpdate
+ */
+export type ProtocolUpdate = {
+    /**
+     * Title
+     */
+    title?: string | null;
+    /**
+     * Abstract
+     */
+    abstract?: string | null;
+    status?: ProtocolStatus | null;
+    risk_level?: RiskLevel | null;
+    review_type?: ReviewType | null;
+};
+
+/**
+ * ProtocolsPublic
+ */
+export type ProtocolsPublic = {
+    /**
+     * Data
+     */
+    data: Array<ProtocolPublic>;
+    /**
+     * Count
+     */
+    count: number;
+};
+
+/**
+ * ReviewAssignmentCreate
+ */
+export type ReviewAssignmentCreate = {
+    /**
+     * Protocol Id
+     */
+    protocol_id: string;
+    /**
+     * Reviewer Id
+     */
+    reviewer_id: string;
+    /**
+     * Due Date
+     */
+    due_date?: string | null;
+};
+
+/**
+ * ReviewAssignmentPublic
+ */
+export type ReviewAssignmentPublic = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Protocol Id
+     */
+    protocol_id: string;
+    /**
+     * Reviewer Id
+     */
+    reviewer_id: string;
+    /**
+     * Assigned By Id
+     */
+    assigned_by_id: string;
+    /**
+     * Due Date
+     */
+    due_date?: string | null;
+    status: AssignmentStatus;
+    /**
+     * Assigned At
+     */
+    assigned_at: string;
+};
+
+/**
+ * ReviewAssignmentsPublic
+ */
+export type ReviewAssignmentsPublic = {
+    /**
+     * Data
+     */
+    data: Array<ReviewAssignmentPublic>;
+    /**
+     * Count
+     */
+    count: number;
+};
+
+/**
+ * ReviewType
+ */
+export type ReviewType = 'EXPEDITED' | 'FULL_BOARD';
+
+/**
+ * RiskLevel
+ */
+export type RiskLevel = 'MINIMAL' | 'GREATER_THAN_MINIMAL';
+
+/**
  * Token
  */
 export type Token = {
@@ -207,6 +367,11 @@ export type UserCreate = {
      */
     full_name?: string | null;
     /**
+     * Department
+     */
+    department?: string | null;
+    role?: UserRole;
+    /**
      * Password
      */
     password: string;
@@ -233,6 +398,11 @@ export type UserPublic = {
      */
     full_name?: string | null;
     /**
+     * Department
+     */
+    department?: string | null;
+    role?: UserRole;
+    /**
      * Id
      */
     id: string;
@@ -258,7 +428,17 @@ export type UserRegister = {
      * Full Name
      */
     full_name?: string | null;
+    /**
+     * Department
+     */
+    department?: string | null;
+    role?: UserRole;
 };
+
+/**
+ * UserRole
+ */
+export type UserRole = 'RESEARCHER' | 'REVIEWER' | 'SECRETARY' | 'ADMIN';
 
 /**
  * UserUpdate
@@ -281,6 +461,11 @@ export type UserUpdate = {
      */
     full_name?: string | null;
     /**
+     * Department
+     */
+    department?: string | null;
+    role?: UserRole | null;
+    /**
      * Password
      */
     password?: string | null;
@@ -298,6 +483,10 @@ export type UserUpdateMe = {
      * Email
      */
     email?: string | null;
+    /**
+     * Department
+     */
+    department?: string | null;
 };
 
 /**
@@ -920,6 +1109,244 @@ export type itemsUpdateItemResponses = {
 };
 
 export type itemsUpdateItemResponse = itemsUpdateItemResponses[keyof itemsUpdateItemResponses];
+
+export type protocolsReadProtocolsData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * Skip
+         */
+        skip?: number;
+        /**
+         * Limit
+         */
+        limit?: number;
+    };
+    url: '/api/v1/protocols/';
+};
+
+export type protocolsReadProtocolsErrors = {
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+};
+
+export type protocolsReadProtocolsError = protocolsReadProtocolsErrors[keyof protocolsReadProtocolsErrors];
+
+export type protocolsReadProtocolsResponses = {
+    /**
+     * Successful Response
+     */
+    200: ProtocolsPublic;
+};
+
+export type protocolsReadProtocolsResponse = protocolsReadProtocolsResponses[keyof protocolsReadProtocolsResponses];
+
+export type protocolsCreateProtocolData = {
+    body: ProtocolCreate;
+    path?: never;
+    query?: never;
+    url: '/api/v1/protocols/';
+};
+
+export type protocolsCreateProtocolErrors = {
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+};
+
+export type protocolsCreateProtocolError = protocolsCreateProtocolErrors[keyof protocolsCreateProtocolErrors];
+
+export type protocolsCreateProtocolResponses = {
+    /**
+     * Successful Response
+     */
+    200: ProtocolPublic;
+};
+
+export type protocolsCreateProtocolResponse = protocolsCreateProtocolResponses[keyof protocolsCreateProtocolResponses];
+
+export type protocolsDeleteProtocolData = {
+    body?: never;
+    path: {
+        /**
+         * Id
+         */
+        id: string;
+    };
+    query?: never;
+    url: '/api/v1/protocols/{id}';
+};
+
+export type protocolsDeleteProtocolErrors = {
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+};
+
+export type protocolsDeleteProtocolError = protocolsDeleteProtocolErrors[keyof protocolsDeleteProtocolErrors];
+
+export type protocolsDeleteProtocolResponses = {
+    /**
+     * Response Protocols-Delete Protocol
+     *
+     * Successful Response
+     */
+    200: unknown;
+};
+
+export type protocolsReadProtocolData = {
+    body?: never;
+    path: {
+        /**
+         * Id
+         */
+        id: string;
+    };
+    query?: never;
+    url: '/api/v1/protocols/{id}';
+};
+
+export type protocolsReadProtocolErrors = {
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+};
+
+export type protocolsReadProtocolError = protocolsReadProtocolErrors[keyof protocolsReadProtocolErrors];
+
+export type protocolsReadProtocolResponses = {
+    /**
+     * Successful Response
+     */
+    200: ProtocolPublic;
+};
+
+export type protocolsReadProtocolResponse = protocolsReadProtocolResponses[keyof protocolsReadProtocolResponses];
+
+export type protocolsUpdateProtocolData = {
+    body: ProtocolUpdate;
+    path: {
+        /**
+         * Id
+         */
+        id: string;
+    };
+    query?: never;
+    url: '/api/v1/protocols/{id}';
+};
+
+export type protocolsUpdateProtocolErrors = {
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+};
+
+export type protocolsUpdateProtocolError = protocolsUpdateProtocolErrors[keyof protocolsUpdateProtocolErrors];
+
+export type protocolsUpdateProtocolResponses = {
+    /**
+     * Successful Response
+     */
+    200: ProtocolPublic;
+};
+
+export type protocolsUpdateProtocolResponse = protocolsUpdateProtocolResponses[keyof protocolsUpdateProtocolResponses];
+
+export type reviewAssignmentsReadReviewAssignmentsData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * Skip
+         */
+        skip?: number;
+        /**
+         * Limit
+         */
+        limit?: number;
+    };
+    url: '/api/v1/review-assignments/';
+};
+
+export type reviewAssignmentsReadReviewAssignmentsErrors = {
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+};
+
+export type reviewAssignmentsReadReviewAssignmentsError = reviewAssignmentsReadReviewAssignmentsErrors[keyof reviewAssignmentsReadReviewAssignmentsErrors];
+
+export type reviewAssignmentsReadReviewAssignmentsResponses = {
+    /**
+     * Successful Response
+     */
+    200: ReviewAssignmentsPublic;
+};
+
+export type reviewAssignmentsReadReviewAssignmentsResponse = reviewAssignmentsReadReviewAssignmentsResponses[keyof reviewAssignmentsReadReviewAssignmentsResponses];
+
+export type reviewAssignmentsCreateReviewAssignmentData = {
+    body: ReviewAssignmentCreate;
+    path?: never;
+    query?: never;
+    url: '/api/v1/review-assignments/';
+};
+
+export type reviewAssignmentsCreateReviewAssignmentErrors = {
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+};
+
+export type reviewAssignmentsCreateReviewAssignmentError = reviewAssignmentsCreateReviewAssignmentErrors[keyof reviewAssignmentsCreateReviewAssignmentErrors];
+
+export type reviewAssignmentsCreateReviewAssignmentResponses = {
+    /**
+     * Successful Response
+     */
+    200: ReviewAssignmentPublic;
+};
+
+export type reviewAssignmentsCreateReviewAssignmentResponse = reviewAssignmentsCreateReviewAssignmentResponses[keyof reviewAssignmentsCreateReviewAssignmentResponses];
+
+export type reviewAssignmentsReadReviewAssignmentData = {
+    body?: never;
+    path: {
+        /**
+         * Id
+         */
+        id: string;
+    };
+    query?: never;
+    url: '/api/v1/review-assignments/{id}';
+};
+
+export type reviewAssignmentsReadReviewAssignmentErrors = {
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+};
+
+export type reviewAssignmentsReadReviewAssignmentError = reviewAssignmentsReadReviewAssignmentErrors[keyof reviewAssignmentsReadReviewAssignmentErrors];
+
+export type reviewAssignmentsReadReviewAssignmentResponses = {
+    /**
+     * Successful Response
+     */
+    200: ReviewAssignmentPublic;
+};
+
+export type reviewAssignmentsReadReviewAssignmentResponse = reviewAssignmentsReadReviewAssignmentResponses[keyof reviewAssignmentsReadReviewAssignmentResponses];
 
 export type privateCreateUserData = {
     body: PrivateUserCreate;
