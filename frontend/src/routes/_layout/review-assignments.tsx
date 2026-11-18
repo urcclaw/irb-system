@@ -9,7 +9,11 @@ export const Route = createFileRoute('/_layout/review-assignments')({
 function ReviewAssignmentsPage() {
   const { data, isLoading, error } = useQuery({
     queryKey: ['review-assignments'],
-    queryFn: () => ReviewAssignmentsService.readReviewAssignments({ skip: 0, limit: 100 }),
+    queryFn: async () => {
+      return ReviewAssignmentsService.assignmentsReadReviewAssignments({
+        query: { skip: 0, limit: 100 }
+      })
+    },
   })
 
   if (isLoading) {
@@ -23,23 +27,27 @@ function ReviewAssignmentsPage() {
 
   if (error) {
     return (
-      <div className="p-6 text-red-500">
-        Error: {(error as Error).message}
+      <div className="p-6 text-red-500 bg-red-50 rounded-lg border border-red-200">
+        <p className="font-bold">เกิดข้อผิดพลาด:</p>
+        <p className="text-sm">{(error as Error).message}</p>
       </div>
     )
   }
 
-  // Guard: ตรวจสอบว่า data.data เป็น Array จริงๆ
-  const assignments = Array.isArray(data?.data) ? data.data : []
-  const count = data?.count ?? 0
+  // ✅ แก้ไข: เข้าถึง data ซ้อน 2 ชั้น เพราะ @hey-api/openapi-ts ห่อ response ด้วย Axios
+  // data (จาก useQuery) → .data (Axios response) → .data (body จริงจาก API)
+  const responseBody = data?.data
+  const assignments = Array.isArray(responseBody?.data) ? responseBody.data : []
+  const count = responseBody?.count ?? 0
 
   return (
     <div className="p-6">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">Review Assignments (งานตรวจสอบ)</h1>
+        <span className="text-sm text-muted-foreground">ทั้งหมด {count} รายการ</span>
       </div>
-      
-      <div className="border rounded-lg overflow-hidden">
+
+      <div className="border rounded-lg overflow-hidden bg-card">
         <table className="w-full text-left text-sm">
           <thead className="bg-muted">
             <tr>
@@ -50,26 +58,34 @@ function ReviewAssignmentsPage() {
               <th className="px-4 py-3 font-medium">กำหนดส่ง</th>
             </tr>
           </thead>
-          <tbody>
-            {assignments.map((assignment) => (
-              <tr key={assignment.id} className="border-t">
-                <td className="px-4 py-3 font-mono text-xs">{assignment.id.slice(0, 8)}...</td>
-                <td className="px-4 py-3 font-mono text-xs">{assignment.protocol_id.slice(0, 8)}...</td>
-                <td className="px-4 py-3 font-mono text-xs">{assignment.reviewer_id.slice(0, 8)}...</td>
-                <td className="px-4 py-3">
-                  <span className={`px-2 py-1 rounded-full text-xs ${
-                    assignment.status === 'COMPLETED' 
-                      ? 'bg-green-100 text-green-800' 
-                      : assignment.status === 'IN_PROGRESS'
-                      ? 'bg-yellow-100 text-yellow-800'
-                      : 'bg-gray-100 text-gray-800'
-                  }`}>
-                    {assignment.status}
-                  </span>
+          <tbody className="divide-y">
+            {assignments.map((assignment: any) => (
+              <tr key={assignment.id} className="hover:bg-muted/50 transition-colors">
+                <td className="px-4 py-3 font-mono text-xs text-muted-foreground">
+                  {assignment.id ? `${assignment.id.slice(0, 8)}...` : 'N/A'}
+                </td>
+                <td className="px-4 py-3 font-mono text-xs text-muted-foreground">
+                  {assignment.protocol_id ? `${assignment.protocol_id.slice(0, 8)}...` : 'N/A'}
+                </td>
+                <td className="px-4 py-3 font-mono text-xs text-muted-foreground">
+                  {assignment.reviewer_id ? `${assignment.reviewer_id.slice(0, 8)}...` : 'N/A'}
                 </td>
                 <td className="px-4 py-3">
-                  {assignment.due_date 
-                    ? new Date(assignment.due_date).toLocaleDateString('th-TH') 
+                  <span className={`inline-flex px-2 py-1 rounded-full text-xs font-medium ${
+                    assignment.status === 'COMPLETED'
+                      ? 'bg-green-100 text-green-800'
+                      : assignment.status === 'IN_PROGRESS'
+                      ? 'bg-yellow-100 text-yellow-800'
+                      : assignment.status === 'PENDING'
+                      ? 'bg-blue-100 text-blue-800'
+                      : 'bg-gray-100 text-gray-800'
+                  }`}>
+                    {assignment.status || 'UNKNOWN'}
+                  </span>
+                </td>
+                <td className="px-4 py-3 text-muted-foreground">
+                  {assignment.due_date
+                    ? new Date(assignment.due_date).toLocaleDateString('th-TH', { year: 'numeric', month: 'short', day: 'numeric' })
                     : '-'}
                 </td>
               </tr>
@@ -77,9 +93,9 @@ function ReviewAssignmentsPage() {
           </tbody>
         </table>
       </div>
-      
+
       {count === 0 && (
-        <div className="text-center py-8 text-muted-foreground">
+        <div className="text-center py-12 border border-dashed rounded-lg bg-muted/20 text-muted-foreground">
           ยังไม่มีงานที่ได้รับมอบหมาย
         </div>
       )}
