@@ -23,6 +23,7 @@ from app.models import (
     UsersPublic,
     UserUpdate,
     UserUpdateMe,
+    UserRole,  # 👈 1. เพิ่ม import UserRole เข้ามา
 )
 from app.utils import generate_new_account_email, send_email
 
@@ -34,17 +35,26 @@ router = APIRouter(prefix="/users", tags=["users"])
     dependencies=[Depends(get_current_active_superuser)],
     response_model=UsersPublic,
 )
-def read_users(session: SessionDep, skip: int = 0, limit: int = 100) -> Any:
+def read_users(
+    session: SessionDep, 
+    skip: int = 0, 
+    limit: int = 100,
+    role: UserRole | None = None,  # 👈 2. เพิ่ม parameter role (Optional)
+) -> Any:
     """
     Retrieve users.
     """
-
     count_statement = select(func.count()).select_from(User)
-    count = session.exec(count_statement).one()
-
     statement = (
         select(User).order_by(col(User.created_at).desc()).offset(skip).limit(limit)
     )
+
+    # 👈 3. เพิ่มเงื่อนไขกรองถ้ามีการส่ง role มา
+    if role is not None:
+        count_statement = count_statement.where(User.role == role)
+        statement = statement.where(User.role == role)
+
+    count = session.exec(count_statement).one()
     users = session.exec(statement).all()
 
     users_public = [UserPublic.model_validate(user) for user in users]
@@ -85,7 +95,6 @@ def update_user_me(
     """
     Update own user.
     """
-
     if user_in.email:
         existing_user = crud.get_user_by_email(session=session, email=user_in.email)
         if existing_user and existing_user.id != current_user.id:
@@ -193,7 +202,6 @@ def update_user(
     """
     Update a user.
     """
-
     db_user = session.get(User, user_id)
     if not db_user:
         raise HTTPException(

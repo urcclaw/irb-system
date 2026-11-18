@@ -14,20 +14,30 @@ router = APIRouter(prefix="/protocols", tags=["protocols"])
 
 @router.get("/", response_model=ProtocolsPublic)
 def read_protocols(
-    session: SessionDep, current_user: CurrentUser, skip: int = 0, limit: int = 100
+    session: SessionDep, 
+    current_user: CurrentUser, 
+    skip: int = 0, 
+    limit: int = 100,
+    status: ProtocolStatus | None = None,  # 👈 1. เพิ่ม parameter status (Optional)
 ) -> Any:
     """
     Retrieve protocols. 
     Researchers see only their own. Secretary/Admin see all.
     """
+    # 👈 2. สร้าง base query ก่อน
+    query = select(Protocol)
+    
+    # 👈 3. เพิ่มเงื่อนไขกรองตาม Role (เหมือนเดิม)
     if current_user.role == UserRole.RESEARCHER:
-        protocols = session.exec(
-            select(Protocol).where(Protocol.pi_id == current_user.id).offset(skip).limit(limit)
-        ).all()
-        count = len(protocols)
-    else:
-        protocols = session.exec(select(Protocol).offset(skip).limit(limit)).all()
-        count = len(protocols)
+        query = query.where(Protocol.pi_id == current_user.id)
+    
+    # 👈 4. เพิ่มเงื่อนไขกรองตาม Status (ถ้ามีการส่งมา)
+    if status is not None:
+        query = query.where(Protocol.status == status)
+    
+    # 👈 5. รัน query พร้อม offset/limit
+    protocols = session.exec(query.offset(skip).limit(limit)).all()
+    count = len(protocols)
     
     return ProtocolsPublic(data=protocols, count=count)
 
