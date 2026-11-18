@@ -1,6 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { useQuery } from '@tanstack/react-query'
 import { ReviewAssignmentsService } from '@/client'
+import { CreateAssignmentDialog } from '@/components/ReviewAssignments/CreateAssignmentDialog'
 
 export const Route = createFileRoute('/_layout/review-assignments')({
   component: ReviewAssignmentsPage,
@@ -34,17 +35,20 @@ function ReviewAssignmentsPage() {
     )
   }
 
-  // ✅ แก้ไข: เข้าถึง data ซ้อน 2 ชั้น เพราะ @hey-api/openapi-ts ห่อ response ด้วย Axios
-  // data (จาก useQuery) → .data (Axios response) → .data (body จริงจาก API)
+  // ✅ เข้าถึง data ซ้อน 2 ชั้น เพราะ @hey-api/openapi-ts ห่อ response ด้วย Axios
   const responseBody = data?.data
   const assignments = Array.isArray(responseBody?.data) ? responseBody.data : []
   const count = responseBody?.count ?? 0
 
   return (
     <div className="p-6">
+      {/* 👇 Header ที่เพิ่มปุ่ม CreateAssignmentDialog เข้ามาแล้ว */}
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">Review Assignments (งานตรวจสอบ)</h1>
-        <span className="text-sm text-muted-foreground">ทั้งหมด {count} รายการ</span>
+        <div className="flex items-center gap-3">
+          <span className="text-sm text-muted-foreground">ทั้งหมด {count} รายการ</span>
+          <CreateAssignmentDialog />
+        </div>
       </div>
 
       <div className="border rounded-lg overflow-hidden bg-card">
