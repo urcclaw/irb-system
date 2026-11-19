@@ -94,18 +94,28 @@ def delete_user_me(session: SessionDep, current_user: CurrentUser) -> Any:
 # ✅ LIST & CREATE (ไม่มี path parameter)
 # ==========================================
 
-@router.get(
-    "/",
-    dependencies=[Depends(get_current_active_superuser)],
-    response_model=UsersPublic,
-)
+@router.get("/", response_model=UsersPublic)
 def read_users(
     session: SessionDep,
+    current_user: CurrentUser,
     skip: int = 0,
     limit: int = 100,
     role: UserRole | None = None,
 ) -> Any:
-    """Retrieve users."""
+    """
+    Retrieve users.
+    - Superuser / Admin / Secretary: see all (for assignment dropdown).
+    - Others: see only themselves.
+    """
+    if not (
+        current_user.is_superuser
+        or current_user.role in [UserRole.ADMIN, UserRole.SECRETARY]
+    ):
+        raise HTTPException(
+            status_code=403,
+            detail="Only admin or secretary can list users",
+        )
+
     count_statement = select(func.count()).select_from(User)
     statement = select(User).order_by(col(User.created_at).desc()).offset(skip).limit(limit)
 
