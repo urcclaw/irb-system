@@ -1,8 +1,7 @@
-from __future__ import annotations
-
 import uuid
 from datetime import UTC, datetime
 from enum import StrEnum
+from typing import List, Optional
 
 from pydantic import EmailStr
 from sqlalchemy import JSON
@@ -215,8 +214,8 @@ class User(UserBase, table=True):
     hashed_password: str
     created_at: datetime | None = Field(default_factory=get_datetime_utc)
 
-    items: list["Item"] = Relationship(back_populates="owner", cascade_delete=True)
-    protocols_as_pi: list["Protocol"] = Relationship(back_populates="pi")
+    items: List["Item"] = Relationship(back_populates="owner", cascade_delete=True)
+    protocols_as_pi: List["Protocol"] = Relationship(back_populates="pi")
 
 
 class UserPublic(UserBase):
@@ -225,7 +224,7 @@ class UserPublic(UserBase):
 
 
 class UsersPublic(SQLModel):
-    data: list[UserPublic]
+    data: List[UserPublic]
     count: int
 
 
@@ -251,7 +250,7 @@ class Item(ItemBase, table=True):
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
     created_at: datetime | None = Field(default_factory=get_datetime_utc)
     owner_id: uuid.UUID = Field(foreign_key="user.id", nullable=False, ondelete="CASCADE")
-    owner: User | None = Relationship(back_populates="items")
+    owner: Optional["User"] = Relationship(back_populates="items")
 
 
 class ItemPublic(ItemBase):
@@ -261,7 +260,7 @@ class ItemPublic(ItemBase):
 
 
 class ItemsPublic(SQLModel):
-    data: list[ItemPublic]
+    data: List[ItemPublic]
     count: int
 
 
@@ -367,14 +366,14 @@ class Protocol(ProtocolBase, table=True):
     created_at: datetime | None = Field(default_factory=get_datetime_utc)
     updated_at: datetime | None = Field(default_factory=get_datetime_utc)
 
-    pi: User | None = Relationship(back_populates="protocols_as_pi")
-    submissions: list["ProtocolSubmission"] = Relationship(back_populates="protocol", cascade_delete=True)
-    documents: list["Document"] = Relationship(back_populates="protocol", cascade_delete=True)
-    review_assignments: list["ReviewAssignment"] = Relationship(back_populates="protocol", cascade_delete=True)
-    certificates: list["Certificate"] = Relationship(back_populates="protocol", cascade_delete=True)
-    follow_up_reports: list["FollowUpReport"] = Relationship(back_populates="protocol", cascade_delete=True)
-    meeting_protocols: list["MeetingProtocol"] = Relationship(back_populates="protocol", cascade_delete=True)
-    secretary_summary: "SecretarySummary" | None = Relationship(back_populates="protocol", cascade_delete=True)
+    pi: Optional["User"] = Relationship(back_populates="protocols_as_pi")
+    submissions: List["ProtocolSubmission"] = Relationship(back_populates="protocol", cascade_delete=True)
+    documents: List["Document"] = Relationship(back_populates="protocol", cascade_delete=True)
+    review_assignments: List["ReviewAssignment"] = Relationship(back_populates="protocol", cascade_delete=True)
+    certificates: List["Certificate"] = Relationship(back_populates="protocol", cascade_delete=True)
+    follow_up_reports: List["FollowUpReport"] = Relationship(back_populates="protocol", cascade_delete=True)
+    meeting_protocols: List["MeetingProtocol"] = Relationship(back_populates="protocol", cascade_delete=True)
+    secretary_summary: Optional["SecretarySummary"] = Relationship(back_populates="protocol", cascade_delete=True)
 
 
 class ProtocolPublic(ProtocolBase):
@@ -387,7 +386,7 @@ class ProtocolPublic(ProtocolBase):
 
 
 class ProtocolsPublic(SQLModel):
-    data: list[ProtocolPublic]
+    data: List[ProtocolPublic]
     count: int
 
 
@@ -412,9 +411,9 @@ class ProtocolSubmission(SQLModel, table=True):
     created_at: datetime = Field(default_factory=get_datetime_utc)
     updated_at: datetime = Field(default_factory=get_datetime_utc)
 
-    protocol: Protocol = Relationship(back_populates="submissions")
-    meeting: "Meeting" | None = Relationship(back_populates="submissions")
-    documents: list["Document"] = Relationship(back_populates="submission", cascade_delete=True)
+    protocol: "Protocol" = Relationship(back_populates="submissions")
+    meeting: Optional["Meeting"] = Relationship(back_populates="submissions")
+    documents: List["Document"] = Relationship(back_populates="submission", cascade_delete=True)
 
 
 class SubmissionCreate(SQLModel):
@@ -454,8 +453,8 @@ class Document(SQLModel, table=True):
     uploaded_by_id: uuid.UUID = Field(foreign_key="user.id")
     uploaded_at: datetime = Field(default_factory=get_datetime_utc)
 
-    submission: ProtocolSubmission = Relationship(back_populates="documents")
-    protocol: Protocol = Relationship(back_populates="documents")
+    submission: "ProtocolSubmission" = Relationship(back_populates="documents")
+    protocol: "Protocol" = Relationship(back_populates="documents")
 
 
 # ==========================================
@@ -472,8 +471,8 @@ class ReviewAssignment(SQLModel, table=True):
     assigned_at: datetime = Field(default_factory=get_datetime_utc)
     evaluation_form: dict | None = Field(default=None, sa_type=JSON)
 
-    protocol: Protocol = Relationship(back_populates="review_assignments")
-    comments: list["ReviewComment"] = Relationship(back_populates="assignment", cascade_delete=True)
+    protocol: "Protocol" = Relationship(back_populates="review_assignments")
+    comments: List["ReviewComment"] = Relationship(back_populates="assignment", cascade_delete=True)
 
 
 class ReviewAssignmentCreate(SQLModel):
@@ -496,7 +495,7 @@ class ReviewAssignmentPublic(SQLModel):
 
 
 class ReviewAssignmentsPublic(SQLModel):
-    data: list[ReviewAssignmentPublic]
+    data: List[ReviewAssignmentPublic]
     count: int
 
 
@@ -506,7 +505,7 @@ class ReviewComment(SQLModel, table=True):
     comments: str
     decision: DecisionType
     reviewed_at: datetime = Field(default_factory=get_datetime_utc)
-    assignment: ReviewAssignment = Relationship(back_populates="comments")
+    assignment: "ReviewAssignment" = Relationship(back_populates="comments")
 
 
 # ==========================================
@@ -525,8 +524,8 @@ class Meeting(SQLModel, table=True):
     created_at: datetime = Field(default_factory=get_datetime_utc)
     updated_at: datetime = Field(default_factory=get_datetime_utc)
 
-    protocols: list["MeetingProtocol"] = Relationship(back_populates="meeting", cascade_delete=True)
-    submissions: list[ProtocolSubmission] = Relationship(back_populates="meeting")
+    protocols: List["MeetingProtocol"] = Relationship(back_populates="meeting", cascade_delete=True)
+    submissions: List["ProtocolSubmission"] = Relationship(back_populates="meeting")
 
 
 class MeetingProtocol(SQLModel, table=True):
@@ -540,8 +539,8 @@ class MeetingProtocol(SQLModel, table=True):
     created_at: datetime = Field(default_factory=get_datetime_utc)
     updated_at: datetime = Field(default_factory=get_datetime_utc)
 
-    meeting: Meeting = Relationship(back_populates="protocols")
-    protocol: Protocol = Relationship(back_populates="meeting_protocols")
+    meeting: "Meeting" = Relationship(back_populates="protocols")
+    protocol: "Protocol" = Relationship(back_populates="meeting_protocols")
 
 
 class MeetingCreate(SQLModel):
@@ -574,7 +573,7 @@ class MeetingPublic(SQLModel):
 
 
 class MeetingsPublic(SQLModel):
-    data: list[MeetingPublic]
+    data: List[MeetingPublic]
     count: int
 
 
@@ -599,12 +598,12 @@ class MeetingProtocolPublic(SQLModel):
 
 
 class MeetingProtocolsPublic(SQLModel):
-    data: list[MeetingProtocolPublic]
+    data: List[MeetingProtocolPublic]
     count: int
 
 
 class MeetingDetailPublic(MeetingPublic):
-    protocols: list[MeetingProtocolPublic] = []
+    protocols: List[MeetingProtocolPublic] = []
 
 
 class MeetingDecisionUpdate(SQLModel):
@@ -623,13 +622,13 @@ class SecretarySummary(SQLModel, table=True):
     final_decision: OverallDecision
     decision_reason: str = Field(max_length=500)
     summary_to_researcher: str
-    conditions: list[str] | None = Field(default=None, sa_type=JSON)
-    required_revisions: list[str] | None = Field(default=None, sa_type=JSON)
+    conditions: List[str] | None = Field(default=None, sa_type=JSON)
+    required_revisions: List[str] | None = Field(default=None, sa_type=JSON)
     created_by_id: uuid.UUID = Field(foreign_key="user.id")
     created_at: datetime = Field(default_factory=get_datetime_utc)
     updated_at: datetime = Field(default_factory=get_datetime_utc)
 
-    protocol: Protocol = Relationship(back_populates="secretary_summary")
+    protocol: "Protocol" = Relationship(back_populates="secretary_summary")
 
 
 class SecretarySummaryCreate(SQLModel):
@@ -638,8 +637,8 @@ class SecretarySummaryCreate(SQLModel):
     final_decision: OverallDecision
     decision_reason: str
     summary_to_researcher: str
-    conditions: list[str] | None = None
-    required_revisions: list[str] | None = None
+    conditions: List[str] | None = None
+    required_revisions: List[str] | None = None
 
 
 class SecretarySummaryPublic(SQLModel):
@@ -649,8 +648,8 @@ class SecretarySummaryPublic(SQLModel):
     final_decision: OverallDecision
     decision_reason: str
     summary_to_researcher: str
-    conditions: list[str] | None = None
-    required_revisions: list[str] | None = None
+    conditions: List[str] | None = None
+    required_revisions: List[str] | None = None
     created_by_id: uuid.UUID
     created_by_name: str | None = None
     created_at: datetime | None = None
@@ -673,7 +672,7 @@ class Certificate(SQLModel, table=True):
     project_title_en: str | None = None
     principal_investigator: str
     department: str
-    conditions: list[str] | None = Field(default=None, sa_type=JSON)
+    conditions: List[str] | None = Field(default=None, sa_type=JSON)
     file_path: str | None = None
     file_name: str | None = None
     qr_code_data: str | None = None
@@ -683,7 +682,7 @@ class Certificate(SQLModel, table=True):
     created_at: datetime = Field(default_factory=get_datetime_utc)
     updated_at: datetime = Field(default_factory=get_datetime_utc)
 
-    protocol: Protocol = Relationship(back_populates="certificates")
+    protocol: "Protocol" = Relationship(back_populates="certificates")
 
 
 class CertificateCreate(SQLModel):
@@ -695,7 +694,7 @@ class CertificateCreate(SQLModel):
     project_title_en: str | None = None
     principal_investigator: str
     department: str
-    conditions: list[str] | None = None
+    conditions: List[str] | None = None
 
 
 class CertificatePublic(SQLModel):
@@ -709,7 +708,7 @@ class CertificatePublic(SQLModel):
     project_title_en: str | None = None
     principal_investigator: str
     department: str
-    conditions: list[str] | None = None
+    conditions: List[str] | None = None
     file_path: str | None = None
     qr_code_data: str | None = None
     issued_at: datetime | None = None
@@ -717,7 +716,7 @@ class CertificatePublic(SQLModel):
 
 
 class CertificatesPublic(SQLModel):
-    data: list[CertificatePublic]
+    data: List[CertificatePublic]
     count: int
 
 
@@ -733,7 +732,7 @@ class FollowUpReport(SQLModel, table=True):
     severity: str | None = None
     status: FollowUpStatus = Field(default=FollowUpStatus.OPEN)
     reported_at: datetime = Field(default_factory=get_datetime_utc)
-    protocol: Protocol = Relationship(back_populates="follow_up_reports")
+    protocol: "Protocol" = Relationship(back_populates="follow_up_reports")
 
 
 # ==========================================
