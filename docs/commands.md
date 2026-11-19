@@ -2,6 +2,29 @@
 
 ไฟล์นี้รวบรวมคำสั่งที่ใช้บ่อยในการพัฒนาระบบ IRB Management System
 
+# Users
+admin@example.com
+secretary@example.com
+reviewer@example.com
+
+# Commands
+# 1. บังคับ Build ใหม่โดยไม่ใช้ Cache (เฉพาะ backend ที่มีขั้นตอน build frontend)
+  docker compose build --no-cache backend
+
+# 2. เมื่อ Build สำเร็จ (ขึ้น Successfully built) ให้สั่งเริ่มระบบ
+  docker compose up -d --build db backend
+   
+# ถ้าต้องการดู Log ว่ารันผ่านไหม
+  docker compose logs -f backend
+
+# run backend
+  cd backend
+  uv run fastapi dev app/main.py
+
+# run frontend
+  cd frontend
+  bun run dev
+
 ---
 
 ## 1. Git Workflow (แบบมีกราฟรูปตัว Y)
