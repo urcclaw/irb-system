@@ -17,9 +17,9 @@ import { Route as SignupRouteImport } from './routes/signup'
 import { Route as LayoutIndexRouteImport } from './routes/_layout/index'
 import { Route as LayoutAdminRouteImport } from './routes/_layout/admin'
 import { Route as LayoutItemsRouteImport } from './routes/_layout/items'
+import { Route as LayoutProtocolsRouteImport } from './routes/_layout/protocols'
 import { Route as LayoutReviewAssignmentsRouteImport } from './routes/_layout/review-assignments'
 import { Route as LayoutSettingsRouteImport } from './routes/_layout/settings'
-import { Route as LayoutProtocolsIndexRouteImport } from './routes/_layout/protocols.index'
 
 const LayoutRoute = LayoutRouteImport.update({
   id: '/_layout',
@@ -60,6 +60,11 @@ const LayoutItemsRoute = LayoutItemsRouteImport.update({
   path: '/items',
   getParentRoute: () => LayoutRoute,
 } as any)
+const LayoutProtocolsRoute = LayoutProtocolsRouteImport.update({
+  id: '/protocols',
+  path: '/protocols',
+  getParentRoute: () => LayoutRoute,
+} as any)
 const LayoutReviewAssignmentsRoute = LayoutReviewAssignmentsRouteImport.update({
   id: '/review-assignments',
   path: '/review-assignments',
@@ -68,11 +73,6 @@ const LayoutReviewAssignmentsRoute = LayoutReviewAssignmentsRouteImport.update({
 const LayoutSettingsRoute = LayoutSettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
-  getParentRoute: () => LayoutRoute,
-} as any)
-const LayoutProtocolsIndexRoute = LayoutProtocolsIndexRouteImport.update({
-  id: '/protocols/',
-  path: '/protocols/',
   getParentRoute: () => LayoutRoute,
 } as any)
 
@@ -84,9 +84,9 @@ export interface FileRoutesByFullPath {
   '/signup': typeof SignupRoute
   '/admin': typeof LayoutAdminRoute
   '/items': typeof LayoutItemsRoute
+  '/protocols': typeof LayoutProtocolsRoute
   '/review-assignments': typeof LayoutReviewAssignmentsRoute
   '/settings': typeof LayoutSettingsRoute
-  '/protocols/': typeof LayoutProtocolsIndexRoute
 }
 export interface FileRoutesByTo {
   '/login': typeof LoginRoute
@@ -95,10 +95,10 @@ export interface FileRoutesByTo {
   '/signup': typeof SignupRoute
   '/admin': typeof LayoutAdminRoute
   '/items': typeof LayoutItemsRoute
+  '/protocols': typeof LayoutProtocolsRoute
   '/review-assignments': typeof LayoutReviewAssignmentsRoute
   '/settings': typeof LayoutSettingsRoute
   '/': typeof LayoutIndexRoute
-  '/protocols': typeof LayoutProtocolsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -109,10 +109,10 @@ export interface FileRoutesById {
   '/signup': typeof SignupRoute
   '/_layout/admin': typeof LayoutAdminRoute
   '/_layout/items': typeof LayoutItemsRoute
+  '/_layout/protocols': typeof LayoutProtocolsRoute
   '/_layout/review-assignments': typeof LayoutReviewAssignmentsRoute
   '/_layout/settings': typeof LayoutSettingsRoute
   '/_layout/': typeof LayoutIndexRoute
-  '/_layout/protocols/': typeof LayoutProtocolsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -124,9 +124,9 @@ export interface FileRouteTypes {
     | '/signup'
     | '/admin'
     | '/items'
+    | '/protocols'
     | '/review-assignments'
     | '/settings'
-    | '/protocols/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/login'
@@ -135,10 +135,10 @@ export interface FileRouteTypes {
     | '/signup'
     | '/admin'
     | '/items'
+    | '/protocols'
     | '/review-assignments'
     | '/settings'
     | '/'
-    | '/protocols'
   id:
     | '__root__'
     | '/_layout'
@@ -148,10 +148,10 @@ export interface FileRouteTypes {
     | '/signup'
     | '/_layout/admin'
     | '/_layout/items'
+    | '/_layout/protocols'
     | '/_layout/review-assignments'
     | '/_layout/settings'
     | '/_layout/'
-    | '/_layout/protocols/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -220,6 +220,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LayoutItemsRouteImport
       parentRoute: typeof LayoutRoute
     }
+    '/_layout/protocols': {
+      id: '/_layout/protocols'
+      path: '/protocols'
+      fullPath: '/protocols'
+      preLoaderRoute: typeof LayoutProtocolsRouteImport
+      parentRoute: typeof LayoutRoute
+    }
     '/_layout/review-assignments': {
       id: '/_layout/review-assignments'
       path: '/review-assignments'
@@ -234,32 +241,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LayoutSettingsRouteImport
       parentRoute: typeof LayoutRoute
     }
-    '/_layout/protocols/': {
-      id: '/_layout/protocols/'
-      path: '/protocols'
-      fullPath: '/protocols/'
-      preLoaderRoute: typeof LayoutProtocolsIndexRouteImport
-      parentRoute: typeof LayoutRoute
-    }
   }
 }
 
 interface LayoutRouteChildren {
   LayoutAdminRoute: typeof LayoutAdminRoute
   LayoutItemsRoute: typeof LayoutItemsRoute
+  LayoutProtocolsRoute: typeof LayoutProtocolsRoute
   LayoutReviewAssignmentsRoute: typeof LayoutReviewAssignmentsRoute
   LayoutSettingsRoute: typeof LayoutSettingsRoute
   LayoutIndexRoute: typeof LayoutIndexRoute
-  LayoutProtocolsIndexRoute: typeof LayoutProtocolsIndexRoute
 }
 
 const LayoutRouteChildren: LayoutRouteChildren = {
   LayoutAdminRoute: LayoutAdminRoute,
   LayoutItemsRoute: LayoutItemsRoute,
+  LayoutProtocolsRoute: LayoutProtocolsRoute,
   LayoutReviewAssignmentsRoute: LayoutReviewAssignmentsRoute,
   LayoutSettingsRoute: LayoutSettingsRoute,
   LayoutIndexRoute: LayoutIndexRoute,
-  LayoutProtocolsIndexRoute: LayoutProtocolsIndexRoute,
 }
 
 const LayoutRouteWithChildren =
