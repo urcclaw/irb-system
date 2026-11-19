@@ -62,6 +62,7 @@ class DecisionType(StrEnum):
     APPROVE = "APPROVE"
     REVISE = "REVISE"
     REJECT = "REJECT"
+    DEFER = "DEFER"  # 👈 เพิ่ม: เลื่อนการตัดสินใจไปประชุมครั้งหน้า
 
 
 class MeetingStatus(StrEnum):
@@ -222,6 +223,7 @@ class Protocol(ProtocolBase, table=True):
     review_assignments: list[ReviewAssignment] = Relationship(back_populates="protocol", cascade_delete=True)
     certificate: "Certificate" = Relationship(back_populates="protocol", cascade_delete=True)
     follow_up_reports: list[FollowUpReport] = Relationship(back_populates="protocol", cascade_delete=True)
+    meeting_protocols: list["MeetingProtocol"] = Relationship(back_populates="protocol", cascade_delete=True)  # 👈 เพิ่ม
 
 
 class ProtocolPublic(ProtocolBase):
@@ -229,9 +231,11 @@ class ProtocolPublic(ProtocolBase):
     pi_id: uuid.UUID
     created_at: datetime | None = None
 
+
 class ProtocolsPublic(SQLModel):
     data: list[ProtocolPublic]
     count: int
+
 
 class Document(SQLModel, table=True):
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
@@ -257,10 +261,12 @@ class ReviewAssignment(SQLModel, table=True):
     protocol: Protocol = Relationship(back_populates="review_assignments")
     comments: list[ReviewComment] = Relationship(back_populates="assignment", cascade_delete=True)
 
+
 class ReviewAssignmentCreate(SQLModel):
     protocol_id: uuid.UUID
     reviewer_id: uuid.UUID
     due_date: datetime | None = None
+
 
 class ReviewAssignmentPublic(SQLModel):
     id: uuid.UUID
@@ -273,9 +279,11 @@ class ReviewAssignmentPublic(SQLModel):
     protocol_title: str | None = None
     reviewer_name: str | None = None
 
+
 class ReviewAssignmentsPublic(SQLModel):
     data: list[ReviewAssignmentPublic]
     count: int
+
 
 class ReviewComment(SQLModel, table=True):
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
@@ -287,6 +295,10 @@ class ReviewComment(SQLModel, table=True):
     assignment: ReviewAssignment = Relationship(back_populates="comments")
 
 
+# ==========================================
+# MEETING (Board Meeting System) - Step 1
+# ==========================================
+
 class Meeting(SQLModel, table=True):
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
     meeting_date: datetime
@@ -295,7 +307,106 @@ class Meeting(SQLModel, table=True):
     minutes: str | None = None
     status: MeetingStatus = Field(default=MeetingStatus.SCHEDULED)
     created_by_id: uuid.UUID = Field(foreign_key="user.id")
+    created_at: datetime = Field(default_factory=get_datetime_utc)
+    updated_at: datetime = Field(default_factory=get_datetime_utc)
 
+    # Relationships
+    protocols: list["MeetingProtocol"] = Relationship(back_populates="meeting", cascade_delete=True)
+
+
+class MeetingProtocol(SQLModel, table=True):
+    """Junction table: Meeting ↔ Protocol (Many-to-Many)"""
+    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+    meeting_id: uuid.UUID = Field(foreign_key="meeting.id")
+    protocol_id: uuid.UUID = Field(foreign_key="protocol.id")
+
+    # ข้อมูลการตัดสินใจ (หลังประชุม)
+    decision: DecisionType | None = None
+    comments: str | None = None
+    reviewed_at: datetime | None = None
+
+    # Metadata
+    agenda_order: int = Field(default=0)
+    created_at: datetime = Field(default_factory=get_datetime_utc)
+    updated_at: datetime = Field(default_factory=get_datetime_utc)
+
+    # Relationships
+    meeting: Meeting = Relationship(back_populates="protocols")
+    protocol: Protocol = Relationship(back_populates="meeting_protocols")
+
+
+class MeetingCreate(SQLModel):
+    meeting_date: datetime
+    location: str | None = None
+    agenda: str | None = None
+
+
+class MeetingUpdate(SQLModel):
+    meeting_date: datetime | None = None
+    location: str | None = None
+    agenda: str | None = None
+    minutes: str | None = None
+    status: MeetingStatus | None = None
+
+
+class MeetingPublic(SQLModel):
+    id: uuid.UUID
+    meeting_date: datetime
+    location: str | None = None
+    agenda: str | None = None
+    minutes: str | None = None
+    status: MeetingStatus
+    created_by_id: uuid.UUID
+    created_at: datetime | None = None
+    protocol_count: int = 0
+
+
+class MeetingsPublic(SQLModel):
+    data: list[MeetingPublic]
+    count: int
+
+
+class MeetingProtocolCreate(SQLModel):
+    protocol_id: uuid.UUID
+    agenda_order: int = 0
+
+
+class MeetingProtocolPublic(SQLModel):
+    id: uuid.UUID
+    meeting_id: uuid.UUID
+    protocol_id: uuid.UUID
+    decision: DecisionType | None = None
+    comments: str | None = None
+    reviewed_at: datetime | None = None
+    agenda_order: int
+    created_at: datetime | None = None
+
+    # Nested data (สำหรับแสดงใน UI)
+    protocol_title: str | None = None
+    protocol_status: ProtocolStatus | None = None
+    protocol_risk_level: RiskLevel | None = None
+    pi_name: str | None = None
+
+
+class MeetingProtocolsPublic(SQLModel):
+    data: list[MeetingProtocolPublic]
+    count: int
+
+
+class MeetingDetailPublic(MeetingPublic):
+    """Meeting พร้อมรายการ Protocol ใน Agenda"""
+    protocols: list[MeetingProtocolPublic] = []
+
+
+class MeetingDecisionUpdate(SQLModel):
+    """บันทึกมติของ protocol หนึ่งตัวในการประชุม"""
+    decision: DecisionType
+    comments: str | None = None
+
+
+# ==========================================
+# CERTIFICATE
+# ==========================================
 
 class Certificate(SQLModel, table=True):
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
@@ -309,6 +420,10 @@ class Certificate(SQLModel, table=True):
     protocol: Protocol = Relationship(back_populates="certificate")
 
 
+# ==========================================
+# FOLLOW-UP
+# ==========================================
+
 class FollowUpReport(SQLModel, table=True):
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
     protocol_id: uuid.UUID = Field(foreign_key="protocol.id")
@@ -320,6 +435,10 @@ class FollowUpReport(SQLModel, table=True):
 
     protocol: Protocol = Relationship(back_populates="follow_up_reports")
 
+
+# ==========================================
+# AUDIT LOG
+# ==========================================
 
 class AuditLog(SQLModel, table=True):
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
