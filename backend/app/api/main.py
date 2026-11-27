@@ -12,6 +12,7 @@ api_router.include_router(items.router)
 # เพิ่ม protocols router (ไม่ต้องใส่ prefix/tags ซ้ำ เพราะกำหนดไว้ในไฟล์ protocols.py แล้ว)
 api_router.include_router(protocols.router)
 api_router.include_router(review_assignments.router)
+api_router.include_router(meetings.router)
 
 if settings.FASTAPI_ENV == "development":
     api_router.include_router(private.router)
