@@ -7,6 +7,15 @@ admin@example.com
 secretary@example.com
 reviewer@example.com
 
+password123
+# สร้าง token
+TOKEN=$(curl -s -X POST http://localhost:8000/api/v1/login/access-token \
+  -H "Content-Type: application/x-www-form-urlencoded" \
+  -d "username=researcher@example.com&password=password123" \
+  | python3 -c "import sys,json; print(json.load(sys.stdin)['access_token'])")
+
+echo "✅ Token: $TOKEN"
+
 # Commands
 # 1. บังคับ Build ใหม่โดยไม่ใช้ Cache (เฉพาะ backend ที่มีขั้นตอน build frontend)
   docker compose build --no-cache backend
