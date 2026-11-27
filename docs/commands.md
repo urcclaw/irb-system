@@ -37,6 +37,7 @@ echo "✅ Token: $TOKEN"
 ---
 
 ## 1. Git Workflow (แบบมีกราฟรูปตัว Y)
+# ใช้ Git Branching แบบ Y-Shaped (หรือ Nested Feature-Fix Workflow) โดยทุกครั้งที่ merge branch ย่อยกลับเข้า branch หลัก ให้ใช้ --no-ff เสมอ
 
     # สร้าง Branch ใหม่สำหรับงาน
     git checkout -b feature/ชื่อ-branch
