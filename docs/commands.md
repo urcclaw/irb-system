@@ -7,6 +7,15 @@ admin@example.com
 secretary@example.com
 reviewer@example.com
 
+password123
+# สร้าง token
+TOKEN=$(curl -s -X POST http://localhost:8000/api/v1/login/access-token \
+  -H "Content-Type: application/x-www-form-urlencoded" \
+  -d "username=researcher@example.com&password=password123" \
+  | python3 -c "import sys,json; print(json.load(sys.stdin)['access_token'])")
+
+echo "✅ Token: $TOKEN"
+
 # Commands
 # 1. บังคับ Build ใหม่โดยไม่ใช้ Cache (เฉพาะ backend ที่มีขั้นตอน build frontend)
   docker compose build --no-cache backend
@@ -28,6 +37,7 @@ reviewer@example.com
 ---
 
 ## 1. Git Workflow (แบบมีกราฟรูปตัว Y)
+# ใช้ Git Branching แบบ Y-Shaped (หรือ Nested Feature-Fix Workflow) โดยทุกครั้งที่ merge branch ย่อยกลับเข้า branch หลัก ให้ใช้ --no-ff เสมอ
 
     # สร้าง Branch ใหม่สำหรับงาน
     git checkout -b feature/ชื่อ-branch
