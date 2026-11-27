@@ -1,4 +1,4 @@
-import { Home, Users, FileText, ClipboardCheck } from 'lucide-react'
+import { Home, Users, FileText, ClipboardCheck, CalendarDays } from 'lucide-react'
 
 import { SidebarAppearance } from "@/components/Common/Appearance"
 import { Logo } from "@/components/Common/Logo"
@@ -18,16 +18,25 @@ export function AppSidebar() {
   // 1. เมนูพื้นฐานสำหรับทุกคน
   const baseItems: Item[] = [
     { icon: Home, title: "Dashboard", path: "/" },
-    { icon: FileText, title: "Protocols", path: "/protocols" }, // เปลี่ยนจาก Items เป็น Protocols
+    { icon: FileText, title: "Protocols", path: "/protocols" },
   ]
 
-  // 2. เมนูเพิ่มเติมสำหรับเลขาฯ และ Reviewer
+  // 2. เมนูเพิ่มเติมสำหรับเลขาฯ, Reviewer, Admin
   const reviewItems: Item[] = []
-  if (currentUser?.role === "SECRETARY" || currentUser?.role === "REVIEWER") {
-    reviewItems.push({ 
-      icon: ClipboardCheck, 
-      title: "Review Assignments", 
-      path: "/review-assignments" 
+  if (
+    currentUser?.role === "SECRETARY" ||
+    currentUser?.role === "REVIEWER" ||
+    currentUser?.role === "ADMIN"
+  ) {
+    reviewItems.push({
+      icon: ClipboardCheck,
+      title: "Review Assignments",
+      path: "/review-assignments",
+    })
+    reviewItems.push({
+      icon: CalendarDays,
+      title: "Meetings",
+      path: "/meetings",
     })
   }
 
