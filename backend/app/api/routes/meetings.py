@@ -17,11 +17,15 @@ from app.models import (
     MeetingProtocolPublic,
     MeetingProtocolsPublic,
     MeetingDetailPublic,
+    MeetingDecisionUpdate,
     MeetingAttendance,
     MeetingStatus,
     MeetingType,
     Protocol,
+    ProtocolStatus,
     User,
+    OverallDecision,
+    SecretarySummary,
 )
 
 router = APIRouter(prefix="/meetings", tags=["meetings"])
@@ -205,7 +209,7 @@ def delete_meeting(
     check_secretary_or_admin(current_user)
     meeting = get_meeting_or_404(session, meeting_id)
     
-    # ตรวจสอบว่ามีการโปรโตคอลในการประชุมนี้หรือไม่
+    # ตรวจสอบว่ามีโปรโตคอลในการประชุมนี้หรือไม่
     protocol_count = count_meeting_protocols(session, meeting_id)
     if protocol_count > 0:
         raise HTTPException(
@@ -413,3 +417,232 @@ def read_meeting_attendance(
         })
     
     return attendance_data
+
+
+# ==========================================
+# Review & Decision APIs (Phase 2.4)
+# ==========================================
+
+@router.patch("/{meeting_id}/protocols/{protocol_id}/review", response_model=MeetingProtocolPublic)
+def review_protocol_in_meeting(
+    meeting_id: uuid.UUID,
+    protocol_id: uuid.UUID,
+    session: SessionDep,
+    current_user: CurrentUser,
+    review_in: MeetingDecisionUpdate,
+) -> Any:
+    """บันทึกผลการพิจารณาโปรโตคอลในการประชุม (SECRETARY/ADMIN เท่านั้น)"""
+    check_secretary_or_admin(current_user)
+    meeting = get_meeting_or_404(session, meeting_id)
+    
+    # ตรวจสอบว่าการประชุมยังไม่ finalize
+    if meeting.status == MeetingStatus.COMPLETED:
+        raise HTTPException(
+            status_code=400,
+            detail="Cannot review protocols in a completed meeting"
+        )
+    
+    # หา MeetingProtocol
+    meeting_protocol = session.exec(
+        select(MeetingProtocol).where(
+            MeetingProtocol.meeting_id == meeting_id,
+            MeetingProtocol.protocol_id == protocol_id
+        )
+    ).first()
+    
+    if not meeting_protocol:
+        raise HTTPException(status_code=404, detail="Protocol not found in this meeting")
+    
+    # อัปเดตผลการพิจารณา
+    meeting_protocol.decision = review_in.decision
+    meeting_protocol.comments = review_in.comments
+    meeting_protocol.reviewed_at = datetime.now(UTC)
+    
+    session.add(meeting_protocol)
+    session.commit()
+    session.refresh(meeting_protocol)
+    
+    # ดึงข้อมูลโปรโตคอลเพิ่มเติม
+    protocol = session.get(Protocol, protocol_id)
+    pi = session.get(User, protocol.pi_id) if protocol else None
+    
+    result_dict = meeting_protocol.model_dump()
+    result_dict["protocol_title"] = protocol.title if protocol else None
+    result_dict["protocol_status"] = protocol.status if protocol else None
+    result_dict["protocol_risk_level"] = protocol.risk_level if protocol else None
+    result_dict["pi_name"] = pi.full_name if pi else None
+    
+    return MeetingProtocolPublic.model_validate(result_dict)
+
+
+@router.get("/{meeting_id}/quorum-status")
+def get_quorum_status(
+    meeting_id: uuid.UUID,
+    session: SessionDep,
+    current_user: CurrentUser,
+) -> Any:
+    """ตรวจสอบสถานะองค์ประชุม"""
+    meeting = get_meeting_or_404(session, meeting_id)
+    
+    # นับจำนวนกรรมการที่มาประชุม
+    attendance_count, present_count = count_meeting_attendance(session, meeting_id)
+    
+    # ตรวจสอบว่าผ่านองค์ประชุมหรือไม่
+    quorum_met = present_count >= meeting.quorum_required
+    
+    return {
+        "meeting_id": meeting_id,
+        "quorum_required": meeting.quorum_required,
+        "total_attendance": attendance_count,
+        "present_count": present_count,
+        "quorum_met": quorum_met,
+        "status": meeting.status,
+    }
+
+
+@router.post("/{meeting_id}/finalize", response_model=MeetingDetailPublic)
+def finalize_meeting(
+    meeting_id: uuid.UUID,
+    session: SessionDep,
+    current_user: CurrentUser,
+) -> Any:
+    """
+    Finalize การประชุม (SECRETARY/ADMIN เท่านั้น)
+    
+    การดำเนินการ:
+    1. ตรวจสอบองค์ประชุม (quorum)
+    2. ตรวจสอบว่าทุกโปรโตคอลได้รับการพิจารณาแล้ว
+    3. อัปเดตสถานะการประชุมเป็น COMPLETED
+    4. อัปเดตสถานะ Protocol ตามผลการพิจารณา
+    5. สร้าง SecretarySummary สำหรับแต่ละโปรโตคอล
+    """
+    check_secretary_or_admin(current_user)
+    meeting = get_meeting_or_404(session, meeting_id)
+    
+    # ตรวจสอบว่าการประชุมยังไม่ finalize
+    if meeting.status == MeetingStatus.COMPLETED:
+        raise HTTPException(
+            status_code=400,
+            detail="Meeting already finalized"
+        )
+    
+    # 1. ตรวจสอบองค์ประชุม
+    attendance_count, present_count = count_meeting_attendance(session, meeting_id)
+    if present_count < meeting.quorum_required:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Quorum not met. Required: {meeting.quorum_required}, Present: {present_count}"
+        )
+    
+    # 2. ดึงโปรโตคอลทั้งหมดในการประชุม
+    meeting_protocols = session.exec(
+        select(MeetingProtocol).where(MeetingProtocol.meeting_id == meeting_id)
+    ).all()
+    
+    if len(meeting_protocols) == 0:
+        raise HTTPException(
+            status_code=400,
+            detail="Cannot finalize meeting with no protocols"
+        )
+    
+    # 3. ตรวจสอบว่าทุกโปรโตคอลได้รับการพิจารณาแล้ว
+    unreviewed = [mp for mp in meeting_protocols if mp.decision is None]
+    if len(unreviewed) > 0:
+        raise HTTPException(
+            status_code=400,
+            detail=f"{len(unreviewed)} protocol(s) have not been reviewed yet"
+        )
+    
+    # 4. อัปเดตสถานะการประชุมเป็น COMPLETED
+    meeting.status = MeetingStatus.COMPLETED
+    session.add(meeting)
+    
+    # 5. อัปเดตสถานะ Protocol และสร้าง SecretarySummary
+    status_mapping = {
+        "APPROVE": ProtocolStatus.APPROVED,
+        "REVISE": ProtocolStatus.REVISION_REQUIRED,
+        "REJECT": ProtocolStatus.REJECTED,
+        "DEFER": ProtocolStatus.AWAITING_DECISION,
+    }
+    
+    overall_decision_mapping = {
+        "APPROVE": OverallDecision.APPROVE,
+        "REVISE": OverallDecision.APPROVE_WITH_REVISION,
+        "REJECT": OverallDecision.REJECT,
+        "DEFER": OverallDecision.REQUEST_CLARIFICATION,
+    }
+    
+    for mp in meeting_protocols:
+        protocol = session.get(Protocol, mp.protocol_id)
+        if not protocol:
+            continue
+        
+        # แปลง DecisionType เป็น ProtocolStatus
+        new_status = status_mapping.get(mp.decision.value if mp.decision else None)
+        if new_status:
+            protocol.status = new_status
+            if mp.decision.value == "APPROVE":
+                protocol.approved_at = datetime.now(UTC)
+            session.add(protocol)
+        
+        # แปลง DecisionType เป็น OverallDecision สำหรับ SecretarySummary
+        overall_decision = overall_decision_mapping.get(mp.decision.value if mp.decision else None)
+        
+        # ตรวจสอบว่ามี SecretarySummary อยู่แล้วหรือไม่ (unique constraint on protocol_id)
+        existing_summary = session.exec(
+            select(SecretarySummary).where(SecretarySummary.protocol_id == protocol.id)
+        ).first()
+        
+        if existing_summary:
+            # อัปเดต SecretarySummary เดิม
+            existing_summary.meeting_id = meeting_id
+            existing_summary.final_decision = overall_decision
+            existing_summary.decision_reason = mp.comments or ""
+            existing_summary.summary_to_researcher = mp.comments or ""
+            existing_summary.updated_at = datetime.now(UTC)
+            session.add(existing_summary)
+        else:
+            # สร้าง SecretarySummary ใหม่
+            summary = SecretarySummary(
+                protocol_id=protocol.id,
+                meeting_id=meeting_id,
+                final_decision=overall_decision,
+                decision_reason=mp.comments or "",
+                summary_to_researcher=mp.comments or "",
+                conditions=[],
+                required_revisions=[],
+                created_by_id=current_user.id,
+            )
+            session.add(summary)
+    
+    session.commit()
+    session.refresh(meeting)
+    
+    # 6. สร้าง response
+    protocols = session.exec(
+        select(MeetingProtocol)
+        .where(MeetingProtocol.meeting_id == meeting_id)
+        .order_by(col(MeetingProtocol.agenda_order).asc())
+    ).all()
+    
+    protocols_data = []
+    for mp in protocols:
+        protocol = session.get(Protocol, mp.protocol_id)
+        if protocol:
+            pi = session.get(User, protocol.pi_id)
+            protocol_dict = mp.model_dump()
+            protocol_dict["protocol_title"] = protocol.title
+            protocol_dict["protocol_status"] = protocol.status
+            protocol_dict["protocol_risk_level"] = protocol.risk_level
+            protocol_dict["pi_name"] = pi.full_name if pi else None
+            protocols_data.append(MeetingProtocolPublic.model_validate(protocol_dict))
+    
+    attendance_count, present_count = count_meeting_attendance(session, meeting_id)
+    
+    meeting_dict = meeting.model_dump()
+    meeting_dict["protocol_count"] = len(protocols_data)
+    meeting_dict["attendance_count"] = attendance_count
+    meeting_dict["present_count"] = present_count
+    meeting_dict["protocols"] = protocols_data
+    
+    return MeetingDetailPublic.model_validate(meeting_dict)
