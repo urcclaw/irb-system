@@ -2,7 +2,7 @@
 
 import { type Client, type Options as Options2, type TDataShape, urlSearchParamsBodySerializer } from './client';
 import { client } from './client.gen';
-import type { itemsCreateItemData, itemsCreateItemErrors, itemsCreateItemResponses, itemsDeleteItemData, itemsDeleteItemErrors, itemsDeleteItemResponses, itemsReadItemData, itemsReadItemErrors, itemsReadItemResponses, itemsReadItemsData, itemsReadItemsErrors, itemsReadItemsResponses, itemsUpdateItemData, itemsUpdateItemErrors, itemsUpdateItemResponses, loginLoginAccessTokenData, loginLoginAccessTokenErrors, loginLoginAccessTokenResponses, loginRecoverPasswordData, loginRecoverPasswordErrors, loginRecoverPasswordHtmlContentData, loginRecoverPasswordHtmlContentErrors, loginRecoverPasswordHtmlContentResponses, loginRecoverPasswordResponses, loginResetPasswordData, loginResetPasswordErrors, loginResetPasswordResponses, loginTestTokenData, loginTestTokenResponses, privateCreateUserData, privateCreateUserErrors, privateCreateUserResponses, protocolsCreateProtocolData, protocolsCreateProtocolErrors, protocolsCreateProtocolResponses, protocolsDeleteProtocolData, protocolsDeleteProtocolErrors, protocolsDeleteProtocolResponses, protocolsReadProtocolData, protocolsReadProtocolErrors, protocolsReadProtocolResponses, protocolsReadProtocolsData, protocolsReadProtocolsErrors, protocolsReadProtocolsResponses, protocolsUpdateProtocolData, protocolsUpdateProtocolErrors, protocolsUpdateProtocolResponses, reviewAssignmentsCreateReviewAssignmentData, reviewAssignmentsCreateReviewAssignmentErrors, reviewAssignmentsCreateReviewAssignmentResponses, reviewAssignmentsReadReviewAssignmentData, reviewAssignmentsReadReviewAssignmentErrors, reviewAssignmentsReadReviewAssignmentResponses, reviewAssignmentsReadReviewAssignmentsData, reviewAssignmentsReadReviewAssignmentsErrors, reviewAssignmentsReadReviewAssignmentsResponses, usersCreateUserData, usersCreateUserErrors, usersCreateUserResponses, usersDeleteUserData, usersDeleteUserErrors, usersDeleteUserMeData, usersDeleteUserMeResponses, usersDeleteUserResponses, usersReadUserByIdData, usersReadUserByIdErrors, usersReadUserByIdResponses, usersReadUserMeData, usersReadUserMeResponses, usersReadUsersData, usersReadUsersErrors, usersReadUsersResponses, usersRegisterUserData, usersRegisterUserErrors, usersRegisterUserResponses, usersUpdatePasswordMeData, usersUpdatePasswordMeErrors, usersUpdatePasswordMeResponses, usersUpdateUserData, usersUpdateUserErrors, usersUpdateUserMeData, usersUpdateUserMeErrors, usersUpdateUserMeResponses, usersUpdateUserResponses, utilsHealthCheckData, utilsHealthCheckResponses, utilsTestEmailData, utilsTestEmailErrors, utilsTestEmailResponses } from './types.gen';
+import type { itemsCreateItemData, itemsCreateItemErrors, itemsCreateItemResponses, itemsDeleteItemData, itemsDeleteItemErrors, itemsDeleteItemResponses, itemsReadItemData, itemsReadItemErrors, itemsReadItemResponses, itemsReadItemsData, itemsReadItemsErrors, itemsReadItemsResponses, itemsUpdateItemData, itemsUpdateItemErrors, itemsUpdateItemResponses, loginLoginAccessTokenData, loginLoginAccessTokenErrors, loginLoginAccessTokenResponses, loginRecoverPasswordData, loginRecoverPasswordErrors, loginRecoverPasswordHtmlContentData, loginRecoverPasswordHtmlContentErrors, loginRecoverPasswordHtmlContentResponses, loginRecoverPasswordResponses, loginResetPasswordData, loginResetPasswordErrors, loginResetPasswordResponses, loginTestTokenData, loginTestTokenResponses, meetingsAddProtocolToMeetingData, meetingsAddProtocolToMeetingErrors, meetingsAddProtocolToMeetingResponses, meetingsCheckInAttendanceData, meetingsCheckInAttendanceErrors, meetingsCheckInAttendanceResponses, meetingsCreateMeetingData, meetingsCreateMeetingErrors, meetingsCreateMeetingResponses, meetingsDeleteMeetingData, meetingsDeleteMeetingErrors, meetingsDeleteMeetingResponses, meetingsFinalizeMeetingData, meetingsFinalizeMeetingErrors, meetingsFinalizeMeetingResponses, meetingsGetQuorumStatusData, meetingsGetQuorumStatusErrors, meetingsGetQuorumStatusResponses, meetingsReadMeetingAttendanceData, meetingsReadMeetingAttendanceErrors, meetingsReadMeetingAttendanceResponses, meetingsReadMeetingData, meetingsReadMeetingErrors, meetingsReadMeetingProtocolsData, meetingsReadMeetingProtocolsErrors, meetingsReadMeetingProtocolsResponses, meetingsReadMeetingResponses, meetingsReadMeetingsData, meetingsReadMeetingsErrors, meetingsReadMeetingsResponses, meetingsRemoveProtocolFromMeetingData, meetingsRemoveProtocolFromMeetingErrors, meetingsRemoveProtocolFromMeetingResponses, meetingsReviewProtocolInMeetingData, meetingsReviewProtocolInMeetingErrors, meetingsReviewProtocolInMeetingResponses, meetingsUpdateMeetingData, meetingsUpdateMeetingErrors, meetingsUpdateMeetingResponses, privateCreateUserData, privateCreateUserErrors, privateCreateUserResponses, protocolsCreateProtocolData, protocolsCreateProtocolErrors, protocolsCreateProtocolResponses, protocolsCreateSubmissionData, protocolsCreateSubmissionErrors, protocolsCreateSubmissionResponses, protocolsReadArchivedProtocolsData, protocolsReadArchivedProtocolsErrors, protocolsReadArchivedProtocolsResponses, protocolsReadProtocolData, protocolsReadProtocolErrors, protocolsReadProtocolResponses, protocolsReadProtocolsData, protocolsReadProtocolsErrors, protocolsReadProtocolsResponses, protocolsReadSubmissionsData, protocolsReadSubmissionsErrors, protocolsReadSubmissionsResponses, protocolsSubmitProtocolData, protocolsSubmitProtocolErrors, protocolsSubmitProtocolResponses, protocolsUpdateProtocolData, protocolsUpdateProtocolErrors, protocolsUpdateProtocolResponses, reviewAssignmentsCreateReviewAssignmentData, reviewAssignmentsCreateReviewAssignmentErrors, reviewAssignmentsCreateReviewAssignmentResponses, reviewAssignmentsReadReviewAssignmentData, reviewAssignmentsReadReviewAssignmentErrors, reviewAssignmentsReadReviewAssignmentResponses, reviewAssignmentsReadReviewAssignmentsData, reviewAssignmentsReadReviewAssignmentsErrors, reviewAssignmentsReadReviewAssignmentsResponses, usersCreateUserData, usersCreateUserErrors, usersCreateUserResponses, usersDeleteUserData, usersDeleteUserErrors, usersDeleteUserMeData, usersDeleteUserMeResponses, usersDeleteUserResponses, usersReadUserByIdData, usersReadUserByIdErrors, usersReadUserByIdResponses, usersReadUserMeData, usersReadUserMeResponses, usersReadUsersData, usersReadUsersErrors, usersReadUsersResponses, usersRegisterUserData, usersRegisterUserErrors, usersRegisterUserResponses, usersUpdatePasswordMeData, usersUpdatePasswordMeErrors, usersUpdatePasswordMeResponses, usersUpdateUserData, usersUpdateUserErrors, usersUpdateUserMeData, usersUpdateUserMeErrors, usersUpdateUserMeResponses, usersUpdateUserResponses, utilsHealthCheckData, utilsHealthCheckResponses, utilsTestEmailData, utilsTestEmailErrors, utilsTestEmailResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean, TResponse = unknown> = Options2<TData, ThrowOnError, TResponse> & {
     /**
@@ -98,38 +98,6 @@ export class LoginService {
 
 export class UsersService {
     /**
-     * Read Users
-     *
-     * Retrieve users.
-     */
-    public static readUsers<ThrowOnError extends boolean = true>(options?: Options<usersReadUsersData, ThrowOnError>) {
-        return (options?.client ?? client).get<usersReadUsersResponses, usersReadUsersErrors, ThrowOnError>({
-            responseType: 'json',
-            security: [{ scheme: 'bearer', type: 'http' }],
-            url: '/api/v1/users/',
-            ...options
-        });
-    }
-    
-    /**
-     * Create User
-     *
-     * Create new user.
-     */
-    public static createUser<ThrowOnError extends boolean = true>(options: Options<usersCreateUserData, ThrowOnError>) {
-        return (options.client ?? client).post<usersCreateUserResponses, usersCreateUserErrors, ThrowOnError>({
-            responseType: 'json',
-            security: [{ scheme: 'bearer', type: 'http' }],
-            url: '/api/v1/users/',
-            ...options,
-            headers: {
-                'Content-Type': 'application/json',
-                ...options.headers
-            }
-        });
-    }
-    
-    /**
      * Delete User Me
      *
      * Delete own user.
@@ -185,6 +153,40 @@ export class UsersService {
             responseType: 'json',
             security: [{ scheme: 'bearer', type: 'http' }],
             url: '/api/v1/users/me/password',
+            ...options,
+            headers: {
+                'Content-Type': 'application/json',
+                ...options.headers
+            }
+        });
+    }
+    
+    /**
+     * Read Users
+     *
+     * Retrieve users.
+     * - Superuser / Admin / Secretary: see all (for assignment dropdown).
+     * - Others: see only themselves.
+     */
+    public static readUsers<ThrowOnError extends boolean = true>(options?: Options<usersReadUsersData, ThrowOnError>) {
+        return (options?.client ?? client).get<usersReadUsersResponses, usersReadUsersErrors, ThrowOnError>({
+            responseType: 'json',
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/api/v1/users/',
+            ...options
+        });
+    }
+    
+    /**
+     * Create User
+     *
+     * Create new user.
+     */
+    public static createUser<ThrowOnError extends boolean = true>(options: Options<usersCreateUserData, ThrowOnError>) {
+        return (options.client ?? client).post<usersCreateUserResponses, usersCreateUserErrors, ThrowOnError>({
+            responseType: 'json',
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/api/v1/users/',
             ...options,
             headers: {
                 'Content-Type': 'application/json',
@@ -368,8 +370,7 @@ export class ProtocolsService {
     /**
      * Read Protocols
      *
-     * Retrieve protocols.
-     * Researchers see only their own. Secretary/Admin see all.
+     * ดูรายการโครงการวิจัย (filter ตาม role)
      */
     public static readProtocols<ThrowOnError extends boolean = true>(options?: Options<protocolsReadProtocolsData, ThrowOnError>) {
         return (options?.client ?? client).get<protocolsReadProtocolsResponses, protocolsReadProtocolsErrors, ThrowOnError>({
@@ -383,7 +384,7 @@ export class ProtocolsService {
     /**
      * Create Protocol
      *
-     * Create new protocol (Researcher only).
+     * สร้างโครงการวิจัยใหม่ (Researcher)
      */
     public static createProtocol<ThrowOnError extends boolean = true>(options: Options<protocolsCreateProtocolData, ThrowOnError>) {
         return (options.client ?? client).post<protocolsCreateProtocolResponses, protocolsCreateProtocolErrors, ThrowOnError>({
@@ -399,29 +400,15 @@ export class ProtocolsService {
     }
     
     /**
-     * Delete Protocol
-     *
-     * Delete protocol (Draft only).
-     */
-    public static deleteProtocol<ThrowOnError extends boolean = true>(options: Options<protocolsDeleteProtocolData, ThrowOnError>) {
-        return (options.client ?? client).delete<protocolsDeleteProtocolResponses, protocolsDeleteProtocolErrors, ThrowOnError>({
-            responseType: 'json',
-            security: [{ scheme: 'bearer', type: 'http' }],
-            url: '/api/v1/protocols/{id}',
-            ...options
-        });
-    }
-    
-    /**
      * Read Protocol
      *
-     * Get protocol by ID.
+     * ดูรายละเอียดโครงการวิจัย
      */
     public static readProtocol<ThrowOnError extends boolean = true>(options: Options<protocolsReadProtocolData, ThrowOnError>) {
         return (options.client ?? client).get<protocolsReadProtocolResponses, protocolsReadProtocolErrors, ThrowOnError>({
             responseType: 'json',
             security: [{ scheme: 'bearer', type: 'http' }],
-            url: '/api/v1/protocols/{id}',
+            url: '/api/v1/protocols/{protocol_id}',
             ...options
         });
     }
@@ -429,18 +416,78 @@ export class ProtocolsService {
     /**
      * Update Protocol
      *
-     * Update protocol.
+     * แก้ไขโครงการวิจัย (เฉพาะ DRAFT หรือ REVISION_REQUIRED)
      */
     public static updateProtocol<ThrowOnError extends boolean = true>(options: Options<protocolsUpdateProtocolData, ThrowOnError>) {
         return (options.client ?? client).patch<protocolsUpdateProtocolResponses, protocolsUpdateProtocolErrors, ThrowOnError>({
             responseType: 'json',
             security: [{ scheme: 'bearer', type: 'http' }],
-            url: '/api/v1/protocols/{id}',
+            url: '/api/v1/protocols/{protocol_id}',
             ...options,
             headers: {
                 'Content-Type': 'application/json',
                 ...options.headers
             }
+        });
+    }
+    
+    /**
+     * Submit Protocol
+     *
+     * ยื่นโครงการวิจัยครั้งแรก (สร้าง IRB number + submission แรก)
+     */
+    public static submitProtocol<ThrowOnError extends boolean = true>(options: Options<protocolsSubmitProtocolData, ThrowOnError>) {
+        return (options.client ?? client).post<protocolsSubmitProtocolResponses, protocolsSubmitProtocolErrors, ThrowOnError>({
+            responseType: 'json',
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/api/v1/protocols/{protocol_id}/submit',
+            ...options
+        });
+    }
+    
+    /**
+     * Read Submissions
+     *
+     * ดูรายการ submission ทั้งหมดของโครงการ
+     */
+    public static readSubmissions<ThrowOnError extends boolean = true>(options: Options<protocolsReadSubmissionsData, ThrowOnError>) {
+        return (options.client ?? client).get<protocolsReadSubmissionsResponses, protocolsReadSubmissionsErrors, ThrowOnError>({
+            responseType: 'json',
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/api/v1/protocols/{protocol_id}/submissions',
+            ...options
+        });
+    }
+    
+    /**
+     * Create Submission
+     *
+     * ยื่นโครงการครั้งใหม่ (Amendment/Renewal/Closure)
+     */
+    public static createSubmission<ThrowOnError extends boolean = true>(options: Options<protocolsCreateSubmissionData, ThrowOnError>) {
+        return (options.client ?? client).post<protocolsCreateSubmissionResponses, protocolsCreateSubmissionErrors, ThrowOnError>({
+            responseType: 'json',
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/api/v1/protocols/{protocol_id}/submissions',
+            ...options,
+            headers: {
+                'Content-Type': 'application/json',
+                ...options.headers
+            }
+        });
+    }
+    
+    /**
+     * Read Archived Protocols
+     *
+     * ดูรายการโครงการเก่า (CLOSED, REJECTED)
+     */
+    public static readArchivedProtocols<ThrowOnError extends boolean = true>(options?: Options<protocolsReadArchivedProtocolsData, ThrowOnError>) {
+        return (options?.client ?? client).get<protocolsReadArchivedProtocolsResponses, protocolsReadArchivedProtocolsErrors, ThrowOnError>({
+            responseType: 'json',
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/api/v1/protocols/archive/list',
+            ...options
         });
     }
 }
@@ -449,7 +496,8 @@ export class ReviewAssignmentsService {
     /**
      * Read Review Assignments
      *
-     * Retrieve review assignments.
+     * Retrieve review assignments with protocol title and reviewer name.
+     *
      * - Secretary/Admin see all.
      * - Reviewer sees only their own.
      * - Researcher has no access.
@@ -491,6 +539,213 @@ export class ReviewAssignmentsService {
             responseType: 'json',
             security: [{ scheme: 'bearer', type: 'http' }],
             url: '/api/v1/review-assignments/{id}',
+            ...options
+        });
+    }
+}
+
+export class MeetingsService {
+    /**
+     * Read Meetings
+     *
+     * ดูรายการการประชุมทั้งหมด (filter ตาม status และ type)
+     */
+    public static readMeetings<ThrowOnError extends boolean = true>(options?: Options<meetingsReadMeetingsData, ThrowOnError>) {
+        return (options?.client ?? client).get<meetingsReadMeetingsResponses, meetingsReadMeetingsErrors, ThrowOnError>({
+            responseType: 'json',
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/api/v1/meetings/',
+            ...options
+        });
+    }
+    
+    /**
+     * Create Meeting
+     *
+     * สร้างการประชุมใหม่ (SECRETARY/ADMIN เท่านั้น)
+     */
+    public static createMeeting<ThrowOnError extends boolean = true>(options: Options<meetingsCreateMeetingData, ThrowOnError>) {
+        return (options.client ?? client).post<meetingsCreateMeetingResponses, meetingsCreateMeetingErrors, ThrowOnError>({
+            responseType: 'json',
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/api/v1/meetings/',
+            ...options,
+            headers: {
+                'Content-Type': 'application/json',
+                ...options.headers
+            }
+        });
+    }
+    
+    /**
+     * Delete Meeting
+     *
+     * ยกเลิกการประชุม (SECRETARY/ADMIN เท่านั้น)
+     */
+    public static deleteMeeting<ThrowOnError extends boolean = true>(options: Options<meetingsDeleteMeetingData, ThrowOnError>) {
+        return (options.client ?? client).delete<meetingsDeleteMeetingResponses, meetingsDeleteMeetingErrors, ThrowOnError>({
+            responseType: 'json',
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/api/v1/meetings/{meeting_id}',
+            ...options
+        });
+    }
+    
+    /**
+     * Read Meeting
+     *
+     * ดูรายละเอียดการประชุม (พร้อมรายการโปรโตคอลและจำนวนกรรมการ)
+     */
+    public static readMeeting<ThrowOnError extends boolean = true>(options: Options<meetingsReadMeetingData, ThrowOnError>) {
+        return (options.client ?? client).get<meetingsReadMeetingResponses, meetingsReadMeetingErrors, ThrowOnError>({
+            responseType: 'json',
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/api/v1/meetings/{meeting_id}',
+            ...options
+        });
+    }
+    
+    /**
+     * Update Meeting
+     *
+     * แก้ไขข้อมูลการประชุม (SECRETARY/ADMIN เท่านั้น)
+     */
+    public static updateMeeting<ThrowOnError extends boolean = true>(options: Options<meetingsUpdateMeetingData, ThrowOnError>) {
+        return (options.client ?? client).patch<meetingsUpdateMeetingResponses, meetingsUpdateMeetingErrors, ThrowOnError>({
+            responseType: 'json',
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/api/v1/meetings/{meeting_id}',
+            ...options,
+            headers: {
+                'Content-Type': 'application/json',
+                ...options.headers
+            }
+        });
+    }
+    
+    /**
+     * Read Meeting Protocols
+     *
+     * ดูรายการโปรโตคอลในการประชุม (เรียงตาม agenda_order)
+     */
+    public static readMeetingProtocols<ThrowOnError extends boolean = true>(options: Options<meetingsReadMeetingProtocolsData, ThrowOnError>) {
+        return (options.client ?? client).get<meetingsReadMeetingProtocolsResponses, meetingsReadMeetingProtocolsErrors, ThrowOnError>({
+            responseType: 'json',
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/api/v1/meetings/{meeting_id}/protocols',
+            ...options
+        });
+    }
+    
+    /**
+     * Add Protocol To Meeting
+     *
+     * เพิ่มโปรโตคอลเข้าวาระการประชุม (SECRETARY/ADMIN เท่านั้น)
+     */
+    public static addProtocolToMeeting<ThrowOnError extends boolean = true>(options: Options<meetingsAddProtocolToMeetingData, ThrowOnError>) {
+        return (options.client ?? client).post<meetingsAddProtocolToMeetingResponses, meetingsAddProtocolToMeetingErrors, ThrowOnError>({
+            responseType: 'json',
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/api/v1/meetings/{meeting_id}/protocols',
+            ...options,
+            headers: {
+                'Content-Type': 'application/json',
+                ...options.headers
+            }
+        });
+    }
+    
+    /**
+     * Remove Protocol From Meeting
+     *
+     * ถอนโปรโตคอลออกจากวาระการประชุม (SECRETARY/ADMIN เท่านั้น)
+     */
+    public static removeProtocolFromMeeting<ThrowOnError extends boolean = true>(options: Options<meetingsRemoveProtocolFromMeetingData, ThrowOnError>) {
+        return (options.client ?? client).delete<meetingsRemoveProtocolFromMeetingResponses, meetingsRemoveProtocolFromMeetingErrors, ThrowOnError>({
+            responseType: 'json',
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/api/v1/meetings/{meeting_id}/protocols/{protocol_id}',
+            ...options
+        });
+    }
+    
+    /**
+     * Read Meeting Attendance
+     *
+     * ดูรายชื่อกรรมการที่มาประชุม
+     */
+    public static readMeetingAttendance<ThrowOnError extends boolean = true>(options: Options<meetingsReadMeetingAttendanceData, ThrowOnError>) {
+        return (options.client ?? client).get<meetingsReadMeetingAttendanceResponses, meetingsReadMeetingAttendanceErrors, ThrowOnError>({
+            responseType: 'json',
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/api/v1/meetings/{meeting_id}/attendance',
+            ...options
+        });
+    }
+    
+    /**
+     * Check In Attendance
+     *
+     * เช็กชื่อกรรมการที่มาประชุม (SECRETARY/ADMIN เท่านั้น)
+     */
+    public static checkInAttendance<ThrowOnError extends boolean = true>(options: Options<meetingsCheckInAttendanceData, ThrowOnError>) {
+        return (options.client ?? client).post<meetingsCheckInAttendanceResponses, meetingsCheckInAttendanceErrors, ThrowOnError>({
+            responseType: 'json',
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/api/v1/meetings/{meeting_id}/attendance',
+            ...options
+        });
+    }
+    
+    /**
+     * Review Protocol In Meeting
+     *
+     * บันทึกผลการพิจารณาโปรโตคอลในการประชุม (SECRETARY/ADMIN เท่านั้น)
+     */
+    public static reviewProtocolInMeeting<ThrowOnError extends boolean = true>(options: Options<meetingsReviewProtocolInMeetingData, ThrowOnError>) {
+        return (options.client ?? client).patch<meetingsReviewProtocolInMeetingResponses, meetingsReviewProtocolInMeetingErrors, ThrowOnError>({
+            responseType: 'json',
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/api/v1/meetings/{meeting_id}/protocols/{protocol_id}/review',
+            ...options,
+            headers: {
+                'Content-Type': 'application/json',
+                ...options.headers
+            }
+        });
+    }
+    
+    /**
+     * Get Quorum Status
+     *
+     * ตรวจสอบสถานะองค์ประชุม
+     */
+    public static getQuorumStatus<ThrowOnError extends boolean = true>(options: Options<meetingsGetQuorumStatusData, ThrowOnError>) {
+        return (options.client ?? client).get<meetingsGetQuorumStatusResponses, meetingsGetQuorumStatusErrors, ThrowOnError>({
+            responseType: 'json',
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/api/v1/meetings/{meeting_id}/quorum-status',
+            ...options
+        });
+    }
+    
+    /**
+     * Finalize Meeting
+     *
+     * Finalize การประชุม (SECRETARY/ADMIN เท่านั้น)
+     *
+     * การดำเนินการ:
+     * 1. ตรวจสอบองค์ประชุม (quorum)
+     * 2. ตรวจสอบว่าทุกโปรโตคอลได้รับการพิจารณาแล้ว
+     * 3. อัปเดตสถานะการประชุมเป็น COMPLETED
+     * 4. อัปเดตสถานะ Protocol ตามผลการพิจารณา
+     * 5. สร้าง SecretarySummary สำหรับแต่ละโปรโตคอล
+     */
+    public static finalizeMeeting<ThrowOnError extends boolean = true>(options: Options<meetingsFinalizeMeetingData, ThrowOnError>) {
+        return (options.client ?? client).post<meetingsFinalizeMeetingResponses, meetingsFinalizeMeetingErrors, ThrowOnError>({
+            responseType: 'json',
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/api/v1/meetings/{meeting_id}/finalize',
             ...options
         });
     }

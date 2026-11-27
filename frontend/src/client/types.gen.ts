@@ -40,6 +40,11 @@ export type Body_login_login_access_token = {
 };
 
 /**
+ * DecisionType
+ */
+export type DecisionType = 'APPROVE' | 'REVISE' | 'REJECT' | 'DEFER';
+
+/**
  * HTTPValidationError
  */
 export type HTTPValidationError = {
@@ -118,6 +123,321 @@ export type ItemsPublic = {
 };
 
 /**
+ * MeetingCreate
+ */
+export type MeetingCreate = {
+    /**
+     * Title
+     */
+    title?: string | null;
+    /**
+     * Meeting Date
+     */
+    meeting_date: string;
+    /**
+     * Start Time
+     */
+    start_time?: string | null;
+    /**
+     * End Time
+     */
+    end_time?: string | null;
+    meeting_type?: MeetingType;
+    /**
+     * Location
+     */
+    location?: string | null;
+    /**
+     * Agenda
+     */
+    agenda?: string | null;
+    /**
+     * Quorum Required
+     */
+    quorum_required?: number;
+};
+
+/**
+ * MeetingDecisionUpdate
+ */
+export type MeetingDecisionUpdate = {
+    decision: DecisionType;
+    /**
+     * Comments
+     */
+    comments?: string | null;
+};
+
+/**
+ * MeetingDetailPublic
+ */
+export type MeetingDetailPublic = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Title
+     */
+    title?: string | null;
+    /**
+     * Meeting Date
+     */
+    meeting_date: string;
+    /**
+     * Start Time
+     */
+    start_time?: string | null;
+    /**
+     * End Time
+     */
+    end_time?: string | null;
+    meeting_type: MeetingType;
+    /**
+     * Location
+     */
+    location?: string | null;
+    /**
+     * Agenda
+     */
+    agenda?: string | null;
+    /**
+     * Minutes
+     */
+    minutes?: string | null;
+    status: MeetingStatus;
+    /**
+     * Quorum Required
+     */
+    quorum_required?: number;
+    /**
+     * Created By Id
+     */
+    created_by_id: string;
+    /**
+     * Created At
+     */
+    created_at?: string | null;
+    /**
+     * Protocol Count
+     */
+    protocol_count?: number;
+    /**
+     * Attendance Count
+     */
+    attendance_count?: number;
+    /**
+     * Present Count
+     */
+    present_count?: number;
+    /**
+     * Protocols
+     */
+    protocols?: Array<MeetingProtocolPublic>;
+};
+
+/**
+ * MeetingProtocolCreate
+ */
+export type MeetingProtocolCreate = {
+    /**
+     * Protocol Id
+     */
+    protocol_id: string;
+    /**
+     * Agenda Order
+     */
+    agenda_order?: number;
+};
+
+/**
+ * MeetingProtocolPublic
+ */
+export type MeetingProtocolPublic = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Meeting Id
+     */
+    meeting_id: string;
+    /**
+     * Protocol Id
+     */
+    protocol_id: string;
+    decision?: DecisionType | null;
+    /**
+     * Comments
+     */
+    comments?: string | null;
+    /**
+     * Reviewed At
+     */
+    reviewed_at?: string | null;
+    /**
+     * Agenda Order
+     */
+    agenda_order: number;
+    /**
+     * Created At
+     */
+    created_at?: string | null;
+    /**
+     * Protocol Title
+     */
+    protocol_title?: string | null;
+    protocol_status?: ProtocolStatus | null;
+    protocol_risk_level?: RiskLevel | null;
+    /**
+     * Pi Name
+     */
+    pi_name?: string | null;
+};
+
+/**
+ * MeetingProtocolsPublic
+ */
+export type MeetingProtocolsPublic = {
+    /**
+     * Data
+     */
+    data: Array<MeetingProtocolPublic>;
+    /**
+     * Count
+     */
+    count: number;
+};
+
+/**
+ * MeetingPublic
+ */
+export type MeetingPublic = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Title
+     */
+    title?: string | null;
+    /**
+     * Meeting Date
+     */
+    meeting_date: string;
+    /**
+     * Start Time
+     */
+    start_time?: string | null;
+    /**
+     * End Time
+     */
+    end_time?: string | null;
+    meeting_type: MeetingType;
+    /**
+     * Location
+     */
+    location?: string | null;
+    /**
+     * Agenda
+     */
+    agenda?: string | null;
+    /**
+     * Minutes
+     */
+    minutes?: string | null;
+    status: MeetingStatus;
+    /**
+     * Quorum Required
+     */
+    quorum_required?: number;
+    /**
+     * Created By Id
+     */
+    created_by_id: string;
+    /**
+     * Created At
+     */
+    created_at?: string | null;
+    /**
+     * Protocol Count
+     */
+    protocol_count?: number;
+    /**
+     * Attendance Count
+     */
+    attendance_count?: number;
+    /**
+     * Present Count
+     */
+    present_count?: number;
+};
+
+/**
+ * MeetingStatus
+ */
+export type MeetingStatus = 'SCHEDULED' | 'ONGOING' | 'COMPLETED' | 'CANCELLED';
+
+/**
+ * MeetingType
+ */
+export type MeetingType = 'EXPEDITED' | 'FULL_BOARD';
+
+/**
+ * MeetingUpdate
+ */
+export type MeetingUpdate = {
+    /**
+     * Title
+     */
+    title?: string | null;
+    /**
+     * Meeting Date
+     */
+    meeting_date?: string | null;
+    /**
+     * Start Time
+     */
+    start_time?: string | null;
+    /**
+     * End Time
+     */
+    end_time?: string | null;
+    meeting_type?: MeetingType | null;
+    /**
+     * Location
+     */
+    location?: string | null;
+    /**
+     * Agenda
+     */
+    agenda?: string | null;
+    /**
+     * Minutes
+     */
+    minutes?: string | null;
+    status?: MeetingStatus | null;
+    /**
+     * Quorum Required
+     */
+    quorum_required?: number | null;
+};
+
+/**
+ * MeetingsPublic
+ */
+export type MeetingsPublic = {
+    /**
+     * Data
+     */
+    data: Array<MeetingPublic>;
+    /**
+     * Count
+     */
+    count: number;
+};
+
+/**
  * Message
  */
 export type Message = {
@@ -177,7 +497,10 @@ export type ProtocolCreate = {
     abstract?: string | null;
     status?: ProtocolStatus;
     risk_level?: RiskLevel | null;
-    review_type?: ReviewType | null;
+    /**
+     * Review Type
+     */
+    review_type?: string | null;
 };
 
 /**
@@ -194,7 +517,10 @@ export type ProtocolPublic = {
     abstract?: string | null;
     status?: ProtocolStatus;
     risk_level?: RiskLevel | null;
-    review_type?: ReviewType | null;
+    /**
+     * Review Type
+     */
+    review_type?: string | null;
     /**
      * Id
      */
@@ -203,6 +529,18 @@ export type ProtocolPublic = {
      * Pi Id
      */
     pi_id: string;
+    /**
+     * Irb Number
+     */
+    irb_number?: string | null;
+    /**
+     * Research Purpose
+     */
+    research_purpose?: string | null;
+    /**
+     * Researcher Type
+     */
+    researcher_type?: string | null;
     /**
      * Created At
      */
@@ -228,7 +566,18 @@ export type ProtocolUpdate = {
     abstract?: string | null;
     status?: ProtocolStatus | null;
     risk_level?: RiskLevel | null;
-    review_type?: ReviewType | null;
+    /**
+     * Review Type
+     */
+    review_type?: string | null;
+    /**
+     * Research Purpose
+     */
+    research_purpose?: string | null;
+    /**
+     * Researcher Type
+     */
+    researcher_type?: string | null;
 };
 
 /**
@@ -292,6 +641,18 @@ export type ReviewAssignmentPublic = {
      * Assigned At
      */
     assigned_at: string;
+    /**
+     * Protocol Title
+     */
+    protocol_title?: string | null;
+    /**
+     * Reviewer Name
+     */
+    reviewer_name?: string | null;
+    /**
+     * Has Evaluation
+     */
+    has_evaluation?: boolean;
 };
 
 /**
@@ -309,14 +670,78 @@ export type ReviewAssignmentsPublic = {
 };
 
 /**
- * ReviewType
- */
-export type ReviewType = 'EXPEDITED' | 'FULL_BOARD';
-
-/**
  * RiskLevel
  */
 export type RiskLevel = 'MINIMAL' | 'GREATER_THAN_MINIMAL';
+
+/**
+ * SubmissionCreate
+ */
+export type SubmissionCreate = {
+    /**
+     * Protocol Id
+     */
+    protocol_id: string;
+    submission_type: SubmissionType;
+    /**
+     * Meeting Id
+     */
+    meeting_id?: string | null;
+};
+
+/**
+ * SubmissionPublic
+ */
+export type SubmissionPublic = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Protocol Id
+     */
+    protocol_id: string;
+    /**
+     * Submission Number
+     */
+    submission_number: number;
+    submission_type: SubmissionType;
+    status: SubmissionStatus;
+    /**
+     * Meeting Id
+     */
+    meeting_id: string | null;
+    /**
+     * Meeting Number
+     */
+    meeting_number: number | null;
+    /**
+     * Submission Year
+     */
+    submission_year: number;
+    /**
+     * Version
+     */
+    version: number;
+    /**
+     * Submitted At
+     */
+    submitted_at: string | null;
+    /**
+     * Created At
+     */
+    created_at: string | null;
+};
+
+/**
+ * SubmissionStatus
+ */
+export type SubmissionStatus = 'DRAFT' | 'SUBMITTED' | 'UNDER_REVIEW' | 'APPROVED' | 'REJECTED' | 'WITHDRAWN';
+
+/**
+ * SubmissionType
+ */
+export type SubmissionType = 'INITIAL' | 'AMENDMENT' | 'RENEWAL' | 'CLOSURE' | 'ADVERSE_EVENT' | 'PROGRESS_REPORT';
 
 /**
  * Token
@@ -657,65 +1082,6 @@ export type loginRecoverPasswordHtmlContentResponses = {
 
 export type loginRecoverPasswordHtmlContentResponse = loginRecoverPasswordHtmlContentResponses[keyof loginRecoverPasswordHtmlContentResponses];
 
-export type usersReadUsersData = {
-    body?: never;
-    path?: never;
-    query?: {
-        /**
-         * Skip
-         */
-        skip?: number;
-        /**
-         * Limit
-         */
-        limit?: number;
-    };
-    url: '/api/v1/users/';
-};
-
-export type usersReadUsersErrors = {
-    /**
-     * Validation Error
-     */
-    422: HTTPValidationError;
-};
-
-export type usersReadUsersError = usersReadUsersErrors[keyof usersReadUsersErrors];
-
-export type usersReadUsersResponses = {
-    /**
-     * Successful Response
-     */
-    200: UsersPublic;
-};
-
-export type usersReadUsersResponse = usersReadUsersResponses[keyof usersReadUsersResponses];
-
-export type usersCreateUserData = {
-    body: UserCreate;
-    path?: never;
-    query?: never;
-    url: '/api/v1/users/';
-};
-
-export type usersCreateUserErrors = {
-    /**
-     * Validation Error
-     */
-    422: HTTPValidationError;
-};
-
-export type usersCreateUserError = usersCreateUserErrors[keyof usersCreateUserErrors];
-
-export type usersCreateUserResponses = {
-    /**
-     * Successful Response
-     */
-    200: UserPublic;
-};
-
-export type usersCreateUserResponse = usersCreateUserResponses[keyof usersCreateUserResponses];
-
 export type usersDeleteUserMeData = {
     body?: never;
     path?: never;
@@ -797,6 +1163,69 @@ export type usersUpdatePasswordMeResponses = {
 };
 
 export type usersUpdatePasswordMeResponse = usersUpdatePasswordMeResponses[keyof usersUpdatePasswordMeResponses];
+
+export type usersReadUsersData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * Skip
+         */
+        skip?: number;
+        /**
+         * Limit
+         */
+        limit?: number;
+        /**
+         * Role
+         */
+        role?: UserRole | null;
+    };
+    url: '/api/v1/users/';
+};
+
+export type usersReadUsersErrors = {
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+};
+
+export type usersReadUsersError = usersReadUsersErrors[keyof usersReadUsersErrors];
+
+export type usersReadUsersResponses = {
+    /**
+     * Successful Response
+     */
+    200: UsersPublic;
+};
+
+export type usersReadUsersResponse = usersReadUsersResponses[keyof usersReadUsersResponses];
+
+export type usersCreateUserData = {
+    body: UserCreate;
+    path?: never;
+    query?: never;
+    url: '/api/v1/users/';
+};
+
+export type usersCreateUserErrors = {
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+};
+
+export type usersCreateUserError = usersCreateUserErrors[keyof usersCreateUserErrors];
+
+export type usersCreateUserResponses = {
+    /**
+     * Successful Response
+     */
+    200: UserPublic;
+};
+
+export type usersCreateUserResponse = usersCreateUserResponses[keyof usersCreateUserResponses];
 
 export type usersRegisterUserData = {
     body: UserRegister;
@@ -1122,6 +1551,10 @@ export type protocolsReadProtocolsData = {
          * Limit
          */
         limit?: number;
+        /**
+         * Status
+         */
+        status?: ProtocolStatus | null;
     };
     url: '/api/v1/protocols/';
 };
@@ -1169,46 +1602,16 @@ export type protocolsCreateProtocolResponses = {
 
 export type protocolsCreateProtocolResponse = protocolsCreateProtocolResponses[keyof protocolsCreateProtocolResponses];
 
-export type protocolsDeleteProtocolData = {
-    body?: never;
-    path: {
-        /**
-         * Id
-         */
-        id: string;
-    };
-    query?: never;
-    url: '/api/v1/protocols/{id}';
-};
-
-export type protocolsDeleteProtocolErrors = {
-    /**
-     * Validation Error
-     */
-    422: HTTPValidationError;
-};
-
-export type protocolsDeleteProtocolError = protocolsDeleteProtocolErrors[keyof protocolsDeleteProtocolErrors];
-
-export type protocolsDeleteProtocolResponses = {
-    /**
-     * Response Protocols-Delete Protocol
-     *
-     * Successful Response
-     */
-    200: unknown;
-};
-
 export type protocolsReadProtocolData = {
     body?: never;
     path: {
         /**
-         * Id
+         * Protocol Id
          */
-        id: string;
+        protocol_id: string;
     };
     query?: never;
-    url: '/api/v1/protocols/{id}';
+    url: '/api/v1/protocols/{protocol_id}';
 };
 
 export type protocolsReadProtocolErrors = {
@@ -1233,12 +1636,12 @@ export type protocolsUpdateProtocolData = {
     body: ProtocolUpdate;
     path: {
         /**
-         * Id
+         * Protocol Id
          */
-        id: string;
+        protocol_id: string;
     };
     query?: never;
-    url: '/api/v1/protocols/{id}';
+    url: '/api/v1/protocols/{protocol_id}';
 };
 
 export type protocolsUpdateProtocolErrors = {
@@ -1258,6 +1661,140 @@ export type protocolsUpdateProtocolResponses = {
 };
 
 export type protocolsUpdateProtocolResponse = protocolsUpdateProtocolResponses[keyof protocolsUpdateProtocolResponses];
+
+export type protocolsSubmitProtocolData = {
+    body?: never;
+    path: {
+        /**
+         * Protocol Id
+         */
+        protocol_id: string;
+    };
+    query?: never;
+    url: '/api/v1/protocols/{protocol_id}/submit';
+};
+
+export type protocolsSubmitProtocolErrors = {
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+};
+
+export type protocolsSubmitProtocolError = protocolsSubmitProtocolErrors[keyof protocolsSubmitProtocolErrors];
+
+export type protocolsSubmitProtocolResponses = {
+    /**
+     * Successful Response
+     */
+    200: SubmissionPublic;
+};
+
+export type protocolsSubmitProtocolResponse = protocolsSubmitProtocolResponses[keyof protocolsSubmitProtocolResponses];
+
+export type protocolsReadSubmissionsData = {
+    body?: never;
+    path: {
+        /**
+         * Protocol Id
+         */
+        protocol_id: string;
+    };
+    query?: never;
+    url: '/api/v1/protocols/{protocol_id}/submissions';
+};
+
+export type protocolsReadSubmissionsErrors = {
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+};
+
+export type protocolsReadSubmissionsError = protocolsReadSubmissionsErrors[keyof protocolsReadSubmissionsErrors];
+
+export type protocolsReadSubmissionsResponses = {
+    /**
+     * Response Protocols-Read Submissions
+     *
+     * Successful Response
+     */
+    200: Array<SubmissionPublic>;
+};
+
+export type protocolsReadSubmissionsResponse = protocolsReadSubmissionsResponses[keyof protocolsReadSubmissionsResponses];
+
+export type protocolsCreateSubmissionData = {
+    body: SubmissionCreate;
+    path: {
+        /**
+         * Protocol Id
+         */
+        protocol_id: string;
+    };
+    query?: never;
+    url: '/api/v1/protocols/{protocol_id}/submissions';
+};
+
+export type protocolsCreateSubmissionErrors = {
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+};
+
+export type protocolsCreateSubmissionError = protocolsCreateSubmissionErrors[keyof protocolsCreateSubmissionErrors];
+
+export type protocolsCreateSubmissionResponses = {
+    /**
+     * Successful Response
+     */
+    200: SubmissionPublic;
+};
+
+export type protocolsCreateSubmissionResponse = protocolsCreateSubmissionResponses[keyof protocolsCreateSubmissionResponses];
+
+export type protocolsReadArchivedProtocolsData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * Skip
+         */
+        skip?: number;
+        /**
+         * Limit
+         */
+        limit?: number;
+        /**
+         * Year
+         */
+        year?: number | null;
+        /**
+         * Status
+         */
+        status?: ProtocolStatus | null;
+    };
+    url: '/api/v1/protocols/archive/list';
+};
+
+export type protocolsReadArchivedProtocolsErrors = {
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+};
+
+export type protocolsReadArchivedProtocolsError = protocolsReadArchivedProtocolsErrors[keyof protocolsReadArchivedProtocolsErrors];
+
+export type protocolsReadArchivedProtocolsResponses = {
+    /**
+     * Successful Response
+     */
+    200: ProtocolsPublic;
+};
+
+export type protocolsReadArchivedProtocolsResponse = protocolsReadArchivedProtocolsResponses[keyof protocolsReadArchivedProtocolsResponses];
 
 export type reviewAssignmentsReadReviewAssignmentsData = {
     body?: never;
@@ -1347,6 +1884,424 @@ export type reviewAssignmentsReadReviewAssignmentResponses = {
 };
 
 export type reviewAssignmentsReadReviewAssignmentResponse = reviewAssignmentsReadReviewAssignmentResponses[keyof reviewAssignmentsReadReviewAssignmentResponses];
+
+export type meetingsReadMeetingsData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * Skip
+         */
+        skip?: number;
+        /**
+         * Limit
+         */
+        limit?: number;
+        /**
+         * Status
+         */
+        status?: MeetingStatus | null;
+        /**
+         * Meeting Type
+         */
+        meeting_type?: MeetingType | null;
+    };
+    url: '/api/v1/meetings/';
+};
+
+export type meetingsReadMeetingsErrors = {
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+};
+
+export type meetingsReadMeetingsError = meetingsReadMeetingsErrors[keyof meetingsReadMeetingsErrors];
+
+export type meetingsReadMeetingsResponses = {
+    /**
+     * Successful Response
+     */
+    200: MeetingsPublic;
+};
+
+export type meetingsReadMeetingsResponse = meetingsReadMeetingsResponses[keyof meetingsReadMeetingsResponses];
+
+export type meetingsCreateMeetingData = {
+    body: MeetingCreate;
+    path?: never;
+    query?: never;
+    url: '/api/v1/meetings/';
+};
+
+export type meetingsCreateMeetingErrors = {
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+};
+
+export type meetingsCreateMeetingError = meetingsCreateMeetingErrors[keyof meetingsCreateMeetingErrors];
+
+export type meetingsCreateMeetingResponses = {
+    /**
+     * Successful Response
+     */
+    200: MeetingPublic;
+};
+
+export type meetingsCreateMeetingResponse = meetingsCreateMeetingResponses[keyof meetingsCreateMeetingResponses];
+
+export type meetingsDeleteMeetingData = {
+    body?: never;
+    path: {
+        /**
+         * Meeting Id
+         */
+        meeting_id: string;
+    };
+    query?: never;
+    url: '/api/v1/meetings/{meeting_id}';
+};
+
+export type meetingsDeleteMeetingErrors = {
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+};
+
+export type meetingsDeleteMeetingError = meetingsDeleteMeetingErrors[keyof meetingsDeleteMeetingErrors];
+
+export type meetingsDeleteMeetingResponses = {
+    /**
+     * Response Meetings-Delete Meeting
+     *
+     * Successful Response
+     */
+    200: unknown;
+};
+
+export type meetingsReadMeetingData = {
+    body?: never;
+    path: {
+        /**
+         * Meeting Id
+         */
+        meeting_id: string;
+    };
+    query?: never;
+    url: '/api/v1/meetings/{meeting_id}';
+};
+
+export type meetingsReadMeetingErrors = {
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+};
+
+export type meetingsReadMeetingError = meetingsReadMeetingErrors[keyof meetingsReadMeetingErrors];
+
+export type meetingsReadMeetingResponses = {
+    /**
+     * Successful Response
+     */
+    200: MeetingDetailPublic;
+};
+
+export type meetingsReadMeetingResponse = meetingsReadMeetingResponses[keyof meetingsReadMeetingResponses];
+
+export type meetingsUpdateMeetingData = {
+    body: MeetingUpdate;
+    path: {
+        /**
+         * Meeting Id
+         */
+        meeting_id: string;
+    };
+    query?: never;
+    url: '/api/v1/meetings/{meeting_id}';
+};
+
+export type meetingsUpdateMeetingErrors = {
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+};
+
+export type meetingsUpdateMeetingError = meetingsUpdateMeetingErrors[keyof meetingsUpdateMeetingErrors];
+
+export type meetingsUpdateMeetingResponses = {
+    /**
+     * Successful Response
+     */
+    200: MeetingPublic;
+};
+
+export type meetingsUpdateMeetingResponse = meetingsUpdateMeetingResponses[keyof meetingsUpdateMeetingResponses];
+
+export type meetingsReadMeetingProtocolsData = {
+    body?: never;
+    path: {
+        /**
+         * Meeting Id
+         */
+        meeting_id: string;
+    };
+    query?: never;
+    url: '/api/v1/meetings/{meeting_id}/protocols';
+};
+
+export type meetingsReadMeetingProtocolsErrors = {
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+};
+
+export type meetingsReadMeetingProtocolsError = meetingsReadMeetingProtocolsErrors[keyof meetingsReadMeetingProtocolsErrors];
+
+export type meetingsReadMeetingProtocolsResponses = {
+    /**
+     * Successful Response
+     */
+    200: MeetingProtocolsPublic;
+};
+
+export type meetingsReadMeetingProtocolsResponse = meetingsReadMeetingProtocolsResponses[keyof meetingsReadMeetingProtocolsResponses];
+
+export type meetingsAddProtocolToMeetingData = {
+    body: MeetingProtocolCreate;
+    path: {
+        /**
+         * Meeting Id
+         */
+        meeting_id: string;
+    };
+    query?: never;
+    url: '/api/v1/meetings/{meeting_id}/protocols';
+};
+
+export type meetingsAddProtocolToMeetingErrors = {
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+};
+
+export type meetingsAddProtocolToMeetingError = meetingsAddProtocolToMeetingErrors[keyof meetingsAddProtocolToMeetingErrors];
+
+export type meetingsAddProtocolToMeetingResponses = {
+    /**
+     * Successful Response
+     */
+    200: MeetingProtocolPublic;
+};
+
+export type meetingsAddProtocolToMeetingResponse = meetingsAddProtocolToMeetingResponses[keyof meetingsAddProtocolToMeetingResponses];
+
+export type meetingsRemoveProtocolFromMeetingData = {
+    body?: never;
+    path: {
+        /**
+         * Meeting Id
+         */
+        meeting_id: string;
+        /**
+         * Protocol Id
+         */
+        protocol_id: string;
+    };
+    query?: never;
+    url: '/api/v1/meetings/{meeting_id}/protocols/{protocol_id}';
+};
+
+export type meetingsRemoveProtocolFromMeetingErrors = {
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+};
+
+export type meetingsRemoveProtocolFromMeetingError = meetingsRemoveProtocolFromMeetingErrors[keyof meetingsRemoveProtocolFromMeetingErrors];
+
+export type meetingsRemoveProtocolFromMeetingResponses = {
+    /**
+     * Response Meetings-Remove Protocol From Meeting
+     *
+     * Successful Response
+     */
+    200: unknown;
+};
+
+export type meetingsReadMeetingAttendanceData = {
+    body?: never;
+    path: {
+        /**
+         * Meeting Id
+         */
+        meeting_id: string;
+    };
+    query?: never;
+    url: '/api/v1/meetings/{meeting_id}/attendance';
+};
+
+export type meetingsReadMeetingAttendanceErrors = {
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+};
+
+export type meetingsReadMeetingAttendanceError = meetingsReadMeetingAttendanceErrors[keyof meetingsReadMeetingAttendanceErrors];
+
+export type meetingsReadMeetingAttendanceResponses = {
+    /**
+     * Response Meetings-Read Meeting Attendance
+     *
+     * Successful Response
+     */
+    200: unknown;
+};
+
+export type meetingsCheckInAttendanceData = {
+    body?: never;
+    path: {
+        /**
+         * Meeting Id
+         */
+        meeting_id: string;
+    };
+    query: {
+        /**
+         * User Id
+         */
+        user_id: string;
+        /**
+         * Is Present
+         */
+        is_present?: boolean;
+        /**
+         * Is Chairperson
+         */
+        is_chairperson?: boolean;
+    };
+    url: '/api/v1/meetings/{meeting_id}/attendance';
+};
+
+export type meetingsCheckInAttendanceErrors = {
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+};
+
+export type meetingsCheckInAttendanceError = meetingsCheckInAttendanceErrors[keyof meetingsCheckInAttendanceErrors];
+
+export type meetingsCheckInAttendanceResponses = {
+    /**
+     * Response Meetings-Check In Attendance
+     *
+     * Successful Response
+     */
+    200: unknown;
+};
+
+export type meetingsReviewProtocolInMeetingData = {
+    body: MeetingDecisionUpdate;
+    path: {
+        /**
+         * Meeting Id
+         */
+        meeting_id: string;
+        /**
+         * Protocol Id
+         */
+        protocol_id: string;
+    };
+    query?: never;
+    url: '/api/v1/meetings/{meeting_id}/protocols/{protocol_id}/review';
+};
+
+export type meetingsReviewProtocolInMeetingErrors = {
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+};
+
+export type meetingsReviewProtocolInMeetingError = meetingsReviewProtocolInMeetingErrors[keyof meetingsReviewProtocolInMeetingErrors];
+
+export type meetingsReviewProtocolInMeetingResponses = {
+    /**
+     * Successful Response
+     */
+    200: MeetingProtocolPublic;
+};
+
+export type meetingsReviewProtocolInMeetingResponse = meetingsReviewProtocolInMeetingResponses[keyof meetingsReviewProtocolInMeetingResponses];
+
+export type meetingsGetQuorumStatusData = {
+    body?: never;
+    path: {
+        /**
+         * Meeting Id
+         */
+        meeting_id: string;
+    };
+    query?: never;
+    url: '/api/v1/meetings/{meeting_id}/quorum-status';
+};
+
+export type meetingsGetQuorumStatusErrors = {
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+};
+
+export type meetingsGetQuorumStatusError = meetingsGetQuorumStatusErrors[keyof meetingsGetQuorumStatusErrors];
+
+export type meetingsGetQuorumStatusResponses = {
+    /**
+     * Response Meetings-Get Quorum Status
+     *
+     * Successful Response
+     */
+    200: unknown;
+};
+
+export type meetingsFinalizeMeetingData = {
+    body?: never;
+    path: {
+        /**
+         * Meeting Id
+         */
+        meeting_id: string;
+    };
+    query?: never;
+    url: '/api/v1/meetings/{meeting_id}/finalize';
+};
+
+export type meetingsFinalizeMeetingErrors = {
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+};
+
+export type meetingsFinalizeMeetingError = meetingsFinalizeMeetingErrors[keyof meetingsFinalizeMeetingErrors];
+
+export type meetingsFinalizeMeetingResponses = {
+    /**
+     * Successful Response
+     */
+    200: MeetingDetailPublic;
+};
+
+export type meetingsFinalizeMeetingResponse = meetingsFinalizeMeetingResponses[keyof meetingsFinalizeMeetingResponses];
 
 export type privateCreateUserData = {
     body: PrivateUserCreate;

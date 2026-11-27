@@ -17,9 +17,11 @@ import { Route as SignupRouteImport } from './routes/signup'
 import { Route as LayoutIndexRouteImport } from './routes/_layout/index'
 import { Route as LayoutAdminRouteImport } from './routes/_layout/admin'
 import { Route as LayoutItemsRouteImport } from './routes/_layout/items'
+import { Route as LayoutMeetingsRouteImport } from './routes/_layout/meetings'
 import { Route as LayoutProtocolsRouteImport } from './routes/_layout/protocols'
 import { Route as LayoutReviewAssignmentsRouteImport } from './routes/_layout/review-assignments'
 import { Route as LayoutSettingsRouteImport } from './routes/_layout/settings'
+import { Route as LayoutMeetingsMeetingIdRouteImport } from './routes/_layout/meetings.$meetingId'
 
 const LayoutRoute = LayoutRouteImport.update({
   id: '/_layout',
@@ -60,6 +62,11 @@ const LayoutItemsRoute = LayoutItemsRouteImport.update({
   path: '/items',
   getParentRoute: () => LayoutRoute,
 } as any)
+const LayoutMeetingsRoute = LayoutMeetingsRouteImport.update({
+  id: '/meetings',
+  path: '/meetings',
+  getParentRoute: () => LayoutRoute,
+} as any)
 const LayoutProtocolsRoute = LayoutProtocolsRouteImport.update({
   id: '/protocols',
   path: '/protocols',
@@ -75,6 +82,11 @@ const LayoutSettingsRoute = LayoutSettingsRouteImport.update({
   path: '/settings',
   getParentRoute: () => LayoutRoute,
 } as any)
+const LayoutMeetingsMeetingIdRoute = LayoutMeetingsMeetingIdRouteImport.update({
+  id: '/$meetingId',
+  path: '/$meetingId',
+  getParentRoute: () => LayoutMeetingsRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof LayoutIndexRoute
@@ -84,9 +96,11 @@ export interface FileRoutesByFullPath {
   '/signup': typeof SignupRoute
   '/admin': typeof LayoutAdminRoute
   '/items': typeof LayoutItemsRoute
+  '/meetings': typeof LayoutMeetingsRouteWithChildren
   '/protocols': typeof LayoutProtocolsRoute
   '/review-assignments': typeof LayoutReviewAssignmentsRoute
   '/settings': typeof LayoutSettingsRoute
+  '/meetings/$meetingId': typeof LayoutMeetingsMeetingIdRoute
 }
 export interface FileRoutesByTo {
   '/login': typeof LoginRoute
@@ -95,10 +109,12 @@ export interface FileRoutesByTo {
   '/signup': typeof SignupRoute
   '/admin': typeof LayoutAdminRoute
   '/items': typeof LayoutItemsRoute
+  '/meetings': typeof LayoutMeetingsRouteWithChildren
   '/protocols': typeof LayoutProtocolsRoute
   '/review-assignments': typeof LayoutReviewAssignmentsRoute
   '/settings': typeof LayoutSettingsRoute
   '/': typeof LayoutIndexRoute
+  '/meetings/$meetingId': typeof LayoutMeetingsMeetingIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -109,10 +125,12 @@ export interface FileRoutesById {
   '/signup': typeof SignupRoute
   '/_layout/admin': typeof LayoutAdminRoute
   '/_layout/items': typeof LayoutItemsRoute
+  '/_layout/meetings': typeof LayoutMeetingsRouteWithChildren
   '/_layout/protocols': typeof LayoutProtocolsRoute
   '/_layout/review-assignments': typeof LayoutReviewAssignmentsRoute
   '/_layout/settings': typeof LayoutSettingsRoute
   '/_layout/': typeof LayoutIndexRoute
+  '/_layout/meetings/$meetingId': typeof LayoutMeetingsMeetingIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -124,9 +142,11 @@ export interface FileRouteTypes {
     | '/signup'
     | '/admin'
     | '/items'
+    | '/meetings'
     | '/protocols'
     | '/review-assignments'
     | '/settings'
+    | '/meetings/$meetingId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/login'
@@ -135,10 +155,12 @@ export interface FileRouteTypes {
     | '/signup'
     | '/admin'
     | '/items'
+    | '/meetings'
     | '/protocols'
     | '/review-assignments'
     | '/settings'
     | '/'
+    | '/meetings/$meetingId'
   id:
     | '__root__'
     | '/_layout'
@@ -148,10 +170,12 @@ export interface FileRouteTypes {
     | '/signup'
     | '/_layout/admin'
     | '/_layout/items'
+    | '/_layout/meetings'
     | '/_layout/protocols'
     | '/_layout/review-assignments'
     | '/_layout/settings'
     | '/_layout/'
+    | '/_layout/meetings/$meetingId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -220,6 +244,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LayoutItemsRouteImport
       parentRoute: typeof LayoutRoute
     }
+    '/_layout/meetings': {
+      id: '/_layout/meetings'
+      path: '/meetings'
+      fullPath: '/meetings'
+      preLoaderRoute: typeof LayoutMeetingsRouteImport
+      parentRoute: typeof LayoutRoute
+    }
     '/_layout/protocols': {
       id: '/_layout/protocols'
       path: '/protocols'
@@ -241,12 +272,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LayoutSettingsRouteImport
       parentRoute: typeof LayoutRoute
     }
+    '/_layout/meetings/$meetingId': {
+      id: '/_layout/meetings/$meetingId'
+      path: '/$meetingId'
+      fullPath: '/meetings/$meetingId'
+      preLoaderRoute: typeof LayoutMeetingsMeetingIdRouteImport
+      parentRoute: typeof LayoutMeetingsRoute
+    }
   }
 }
+
+interface LayoutMeetingsRouteChildren {
+  LayoutMeetingsMeetingIdRoute: typeof LayoutMeetingsMeetingIdRoute
+}
+
+const LayoutMeetingsRouteChildren: LayoutMeetingsRouteChildren = {
+  LayoutMeetingsMeetingIdRoute: LayoutMeetingsMeetingIdRoute,
+}
+
+const LayoutMeetingsRouteWithChildren = LayoutMeetingsRoute._addFileChildren(
+  LayoutMeetingsRouteChildren,
+)
 
 interface LayoutRouteChildren {
   LayoutAdminRoute: typeof LayoutAdminRoute
   LayoutItemsRoute: typeof LayoutItemsRoute
+  LayoutMeetingsRoute: typeof LayoutMeetingsRouteWithChildren
   LayoutProtocolsRoute: typeof LayoutProtocolsRoute
   LayoutReviewAssignmentsRoute: typeof LayoutReviewAssignmentsRoute
   LayoutSettingsRoute: typeof LayoutSettingsRoute
@@ -256,6 +307,7 @@ interface LayoutRouteChildren {
 const LayoutRouteChildren: LayoutRouteChildren = {
   LayoutAdminRoute: LayoutAdminRoute,
   LayoutItemsRoute: LayoutItemsRoute,
+  LayoutMeetingsRoute: LayoutMeetingsRouteWithChildren,
   LayoutProtocolsRoute: LayoutProtocolsRoute,
   LayoutReviewAssignmentsRoute: LayoutReviewAssignmentsRoute,
   LayoutSettingsRoute: LayoutSettingsRoute,
