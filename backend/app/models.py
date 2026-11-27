@@ -79,6 +79,7 @@ class DecisionType(StrEnum):
 
 class MeetingStatus(StrEnum):
     SCHEDULED = "SCHEDULED"
+    ONGOING = "ONGOING"
     COMPLETED = "COMPLETED"
     CANCELLED = "CANCELLED"
 
@@ -216,6 +217,7 @@ class User(UserBase, table=True):
 
     items: List["Item"] = Relationship(back_populates="owner", cascade_delete=True)
     protocols_as_pi: List["Protocol"] = Relationship(back_populates="pi")
+    meeting_attendances: List["MeetingAttendance"] = Relationship(back_populates="user")
 
 
 class UserPublic(UserBase):
@@ -514,18 +516,23 @@ class ReviewComment(SQLModel, table=True):
 
 class Meeting(SQLModel, table=True):
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+    title: str | None = Field(default=None, max_length=255, description="ชื่อการประชุม")
     meeting_date: datetime
+    start_time: datetime | None = Field(default=None, description="เวลาเริ่มประชุม")
+    end_time: datetime | None = Field(default=None, description="เวลาสิ้นสุด")
     meeting_type: MeetingType = Field(default=MeetingType.FULL_BOARD)
     location: str | None = None
     agenda: str | None = None
     minutes: str | None = None
     status: MeetingStatus = Field(default=MeetingStatus.SCHEDULED)
+    quorum_required: int = Field(default=1, description="จำนวนกรรมการขั้นต่ำสำหรับองค์ประชุม")
     created_by_id: uuid.UUID = Field(foreign_key="user.id")
     created_at: datetime = Field(default_factory=get_datetime_utc)
     updated_at: datetime = Field(default_factory=get_datetime_utc)
 
     protocols: List["MeetingProtocol"] = Relationship(back_populates="meeting", cascade_delete=True)
     submissions: List["ProtocolSubmission"] = Relationship(back_populates="meeting")
+    attendances: List["MeetingAttendance"] = Relationship(back_populates="meeting", cascade_delete=True)
 
 
 class MeetingProtocol(SQLModel, table=True):
@@ -543,33 +550,62 @@ class MeetingProtocol(SQLModel, table=True):
     protocol: "Protocol" = Relationship(back_populates="meeting_protocols")
 
 
+class MeetingAttendance(SQLModel, table=True):
+    """สำหรับเช็กชื่อกรรมการและคำนวณองค์ประชุม"""
+    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+    meeting_id: uuid.UUID = Field(foreign_key="meeting.id")
+    user_id: uuid.UUID = Field(foreign_key="user.id")
+    is_present: bool = Field(default=False, description="มาประชุมหรือไม่")
+    is_chairperson: bool = Field(default=False, description="เป็นประธานการประชุมหรือไม่")
+    checked_in_at: datetime | None = Field(default=None, description="เวลาเช็กชื่อ")
+    created_at: datetime = Field(default_factory=get_datetime_utc)
+    updated_at: datetime = Field(default_factory=get_datetime_utc)
+
+    meeting: "Meeting" = Relationship(back_populates="attendances")
+    user: Optional["User"] = Relationship(back_populates="meeting_attendances")
+
+
 class MeetingCreate(SQLModel):
+    title: str | None = Field(default=None, max_length=255)
     meeting_date: datetime
+    start_time: datetime | None = None
+    end_time: datetime | None = None
     meeting_type: MeetingType = Field(default=MeetingType.FULL_BOARD)
     location: str | None = None
     agenda: str | None = None
+    quorum_required: int = Field(default=1)
 
 
 class MeetingUpdate(SQLModel):
+    title: str | None = Field(default=None, max_length=255)
     meeting_date: datetime | None = None
+    start_time: datetime | None = None
+    end_time: datetime | None = None
     meeting_type: MeetingType | None = None
     location: str | None = None
     agenda: str | None = None
     minutes: str | None = None
     status: MeetingStatus | None = None
+    quorum_required: int | None = None
 
 
 class MeetingPublic(SQLModel):
     id: uuid.UUID
+    title: str | None = None
     meeting_date: datetime
+    start_time: datetime | None = None
+    end_time: datetime | None = None
     meeting_type: MeetingType
     location: str | None = None
     agenda: str | None = None
     minutes: str | None = None
     status: MeetingStatus
+    quorum_required: int = 1
     created_by_id: uuid.UUID
     created_at: datetime | None = None
     protocol_count: int = 0
+    attendance_count: int = 0
+    present_count: int = 0
 
 
 class MeetingsPublic(SQLModel):
