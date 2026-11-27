@@ -4,7 +4,7 @@ import { MeetingsService } from '@/client'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { useCustomToast } from '@/hooks/useCustomToast'
+import useCustomToast from '@/hooks/useCustomToast'
 import { MeetingReviewDialog } from '@/components/Meetings/MeetingReviewDialog'
 import { useState } from 'react'
 
